@@ -1,0 +1,34 @@
+# MacMini Gang - Dr.Fixit Edition
+# Git Ignore
+
+# Memory / Runtime data
+.memory/
+logs/
+backups/
+status/
+*.pid
+*.log
+
+# Large files
+*.tar.gz
+*.zip
+*.dmg
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets
+.env
+*.key
+*.pem
