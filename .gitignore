@@ -1,11 +1,19 @@
-# Logs
+# Dr.Fixit Agent System - Git Ignore
+
+# Logs (keep directory, ignore contents)
 logs/*.log
 logs/*.txt
+!logs/.gitkeep
 *.log
 
 # PID files
 *.pid
 /tmp/*.pid
+
+# Runtime data
+.memory/
+backups/
+status/
 
 # macOS
 .DS_Store
@@ -15,12 +23,17 @@ logs/*.txt
 # Environment
 .env
 .env.local
+*.key
+*.pem
 
 # Models (large files, download separately)
 models/
 *.safetensors
 *.gguf
 *.bin
+*.tar.gz
+*.zip
+*.dmg
 
 # Python
 __pycache__/
@@ -47,5 +60,6 @@ yarn-error.log*
 *.temp
 .cache/
 
-# Don't ignore empty log directory
-!logs/.gitkeep
+# Build artifacts
+dist/
+build/

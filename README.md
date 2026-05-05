@@ -1,3 +1,5 @@
+> **Note:** This README combines the previous Agent Configuration Manager with the new Dr.Fixit Health Monitoring System.
+
 # Agent Dr. Fixit 🤖💉
 
 **Automated Health Monitoring & Auto-Recovery for AI Agents**
@@ -13,6 +15,23 @@ Continuous uptime for your local MLX inference servers with automatic restart, h
 - 🚨 **Alert System**: Notifies when agents go down and come back up
 - 🎯 **Multi-Agent**: Support for unlimited agents in one config file
 - 🍎 **macOS Native**: Uses launchd (proper Mac service management)
+
+## Directory Structure
+
+```
+agents-dr.fixit/
+├── agents/
+│   └── hermes-3-mlx/              # Hermes 3 MLX server
+├── scripts/
+│   ├── agent-heartbeat.sh        # Health monitor (main)
+│   ├── setup-macos.sh            # launchd installer
+│   └── uninstall.sh              # Cleanup
+├── config/
+│   └── agents.conf               # Agent registry
+├── logs/                         # Health logs
+├── .github/workflows/            # CI/CD validation
+└── install.sh                    # One-command setup
+```
 
 ## Quick Start
 
@@ -110,6 +129,15 @@ launchctl unload ~/Library/LaunchAgents/com.studex.agents-startup.plist
 ./scripts/uninstall.sh
 ```
 
+## Log Files
+
+| File | Purpose |
+|------|---------|
+| `logs/heartbeat.log` | Health check runs, agent status |
+| `logs/alerts.log` | Only errors and restarts |
+| `logs/hermes-3-mlx.log` | Model inference logs |
+| `logs/launchd.stderr.log` | Service errors |
+
 ## How the Monitoring Works
 
 ```
@@ -140,35 +168,18 @@ launchctl unload ~/Library/LaunchAgents/com.studex.agents-startup.plist
     └─────────┘            └─────────┘
 ```
 
-## File Structure
+## Connect to Hermes Desktop App
 
+Once running, configure the Hermes desktop app:
+
+```bash
+hermes model
+# Select: "Custom endpoint"
+# Base URL: http://localhost:8000/v1
+# Model: mlx-community/Hermes-3-Llama-3.1-8B-4bit
+
+hermes  # Launch desktop app
 ```
-agents-dr.fixit/
-├── agents/
-│   └── hermes-3-mlx/
-│       └── hermes-mlx-server.sh    # Hermes 3 MLX launcher
-├── config/
-│   └── agents.conf                  # Agent registry
-├── logs/
-│   ├── heartbeat.log               # Health check logs
-│   ├── hermes-3-mlx.log           # Server logs
-│   └── alerts.log                  # Only alerts/errors
-├── scripts/
-│   ├── agent-heartbeat.sh          # Main monitor
-│   ├── setup-macos.sh             # macOS setup
-│   └── start-all-agents.sh        # Startup script
-├── install.sh                      # Quick installer
-└── README.md                       # This file
-```
-
-## Log Files
-
-| File | Purpose |
-|------|---------|
-| `logs/heartbeat.log` | Health check runs, agent status |
-| `logs/alerts.log` | Only errors and restarts |
-| `logs/hermes-3-mlx.log` | Model inference logs |
-| `logs/launchd.stderr.log` | Service errors |
 
 ## Testing
 
@@ -182,10 +193,8 @@ curl http://localhost:8000/v1/chat/completions \
 ./scripts/agent-heartbeat.sh --once
 
 # Simulate crash and see recovery
-# (In another terminal)
-pkill -f "hermes-mlx-server" # or macmlx
-# Then run heartbeat - should auto-restart
-./scripts/agent-heartbeat.sh --once
+pkill -f "hermes-mlx-server"
+./scripts/agent-heartbeat.sh --once  # Should auto-restart
 ```
 
 ## Troubleshooting
@@ -215,6 +224,16 @@ launchctl list | grep studex
 ls ~/Library/LaunchAgents/com.studex.*
 ```
 
+## Performance on M1 Max 32GB
+
+| Model | Memory | Tokens/sec | Use Case |
+|-------|--------|------------|----------|
+| Hermes-3-3B | ~5GB | ~80 tok/s | Quick tasks, testing |
+| Hermes-3-8B | ~12GB | ~45 tok/s | General purpose ⭐ |
+| Qwen3.5-9B | ~12GB | ~50 tok/s | Advanced reasoning |
+
+All models run entirely on GPU (unified memory).
+
 ## Advanced: Custom Alert Integration
 
 Edit `scripts/agent-heartbeat.sh` and add webhook calls to the `alert()` function:
@@ -235,28 +254,16 @@ alert() {
 }
 ```
 
-## Connect to Hermes Desktop App
+## Legacy: Agent Configuration
 
-Once running, configure the Hermes desktop app:
-
-```bash
-hermes model
-# Select: "Custom endpoint"
-# Base URL: http://localhost:8000/v1
-# Model: mlx-community/Hermes-3-Llama-3.1-8B-4bit
-
-hermes  # Launch desktop app
+This repo was previously used for agent configuration management. Those configs are preserved in:
 ```
-
-## Performance on M1 Max 32GB
-
-| Model | Memory | Tokens/sec | Use Case |
-|-------|--------|------------|----------|
-| Hermes-3-3B | ~5GB | ~80 tok/s | Quick tasks, testing |
-| Hermes-3-8B | ~12GB | ~45 tok/s | General purpose ⭐ |
-| Qwen3.5-9B | ~12GB | ~50 tok/s | Advanced reasoning |
-
-All models run entirely on GPU (unified memory).
+config/
+├── slack/
+├── openclaw/
+├── hermes/
+└── nexus/
+```
 
 ## License
 
