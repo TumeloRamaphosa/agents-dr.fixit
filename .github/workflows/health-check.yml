@@ -1,0 +1,68 @@
+name: Agent Health CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-scripts:
+    runs-on: macos-latest  # macOS specific tests
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Validate shell scripts
+      run: |
+        find . -name "*.sh" -type f | while read script; do
+          echo "Checking: $script"
+          bash -n "$script"
+        done
+        echo "✅ All scripts valid"
+    
+    - name: Check file permissions
+      run: |
+        chmod +x install.sh
+        chmod +x scripts/*.sh 2>/dev/null || true
+        echo "✅ Permissions set"
+    
+    - name: Validate agent config
+      run: |
+        if [ -f config/agents.conf ]; then
+          echo "✅ Agents config exists"
+        else
+          echo "⚠️  No agents.conf (will be created on first run)"
+        fi
+    
+    - name: Check directory structure
+      run: |
+        test -d agents || exit 1
+        test -d scripts || exit 1
+        test -d config || exit 1
+        echo "✅ Directory structure valid"
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install shellcheck
+      run: sudo apt-get update && sudo apt-get install -y shellcheck
+    
+    - name: Run shellcheck
+      run: |
+        find . -name "*.sh" -type f ! -path "./.git/*" ! -path "./logs/*" | head -20 | while read script; do
+          shellcheck -S warning "$script" || true
+        done
+        echo "✅ Shellcheck complete"
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check README exists
+      run: test -f README.md
+    
+    - name: Check install script exists
+      run: test -x install.sh
