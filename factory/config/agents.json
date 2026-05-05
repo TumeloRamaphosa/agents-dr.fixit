@@ -1,0 +1,249 @@
+{
+  "agents": [
+    {
+      "id": "robusca",
+      "name": "Robusca",
+      "role": "Daily Standup Host",
+      "description": "Daily 08:00 SAST host, plan-the-day, greets you and coordinates all activities",
+      "channels": ["telegram", "voice"],
+      "model": "qwen2.5:7b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "XB0fDUnXU5powFXDhCwa",
+        "name": "Charlotte",
+        "settings": {
+          "stability": 0.5,
+          "similarity_boost": 0.75,
+          "style": 0.0,
+          "use_speaker_boost": true
+        },
+        "personality": "warm, calm, South African English accent"
+      },
+      "schedule": "0 8 * * *",
+      "timezone": "Africa/Johannesburg",
+      "machine": "mbp-m1-orchestrator",
+      "priority": 1,
+      "tools": ["memory_read", "memory_write", "schedule_check", "cost_query", "sales_fetch", "social_fetch"]
+    },
+    {
+      "id": "cto",
+      "name": "CTO",
+      "role": "Chief Technology Officer",
+      "description": "09:00 chief, reports on infrastructure, agents, tokens, uptime",
+      "channels": ["board_meeting"],
+      "model": "qwen2.5-coder:7b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "AZnzlk1XvdvUeBnXmlld",
+        "name": "Domi",
+        "settings": {
+          "stability": 0.65,
+          "similarity_boost": 0.75,
+          "style": 0.0
+        },
+        "personality": "crisp, technical, precise"
+      },
+      "schedule": "0 9 * * *",
+      "machine": "mbp-m1-orchestrator",
+      "priority": 2,
+      "tools": ["agent_status", "token_usage", "uptime_check", "linear_tickets", "bug_report"]
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "role": "Execution Engineer",
+      "description": "Execution agent for code, repos, deploys, builds",
+      "channels": ["war_room", "internal"],
+      "model": "deepseek-coder:6.7b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "pNInz6obpgDQGcFmaJgB",
+        "name": "Adam",
+        "settings": {
+          "stability": 0.6,
+          "similarity_boost": 0.7
+        },
+        "personality": "focused, direct, technical"
+      },
+      "machine": "win-desktop-gpu",
+      "priority": 3,
+      "tools": ["github", "deploy", "code_write", "code_review", "terminal"]
+    },
+    {
+      "id": "cashclaw",
+      "name": "CashClaw",
+      "role": "Sales & Revenue Agent",
+      "description": "Sales, CRM, invoices, Stripe/PayFast integration",
+      "channels": ["slack", "dashboard"],
+      "model": "hermes3:8b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "TxGEqnHWrfWFT9NGDgqt",
+        "name": "Todd",
+        "settings": {
+          "stability": 0.55,
+          "similarity_boost": 0.8
+        },
+        "personality": "confident, persuasive, business-focused"
+      },
+      "machine": "mbp-m1-orchestrator",
+      "priority": 3,
+      "tools": ["stripe_api", "payfast_api", "crm_fetch", "invoice_create", "sales_report"]
+    },
+    {
+      "id": "denchclaw",
+      "name": "DenchClaw",
+      "role": "Customer Relations",
+      "description": "Customer relations, signups, support, WhatsApp handling",
+      "channels": ["whatsapp", "email"],
+      "model": "llama3.1:8b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "yoZ06aMxZJJ28mfd3POQ",
+        "name": "Jessica",
+        "settings": {
+          "stability": 0.5,
+          "similarity_boost": 0.75
+        },
+        "personality": "friendly, helpful, warm SA-English"
+      },
+      "machine": "mbp-m1-orchestrator",
+      "priority": 3,
+      "tools": ["whatsapp_api", "email_read", "signup_track", "support_ticket"]
+    },
+    {
+      "id": "charlie",
+      "name": "Charlie",
+      "role": "StudEx Meat Customer Agent",
+      "description": "Dedicated StudEx Meat customer service agent",
+      "channels": ["whatsapp"],
+      "model": "llama3.1:8b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "EXAVITQu4vr4xnSDxMaL",
+        "name": "Sarah",
+        "settings": {
+          "stability": 0.5,
+          "similarity_boost": 0.75
+        },
+        "personality": "warm SA-English, helpful for meat customers"
+      },
+      "machine": "mbp-m1-orchestrator",
+      "priority": 3,
+      "tools": ["meat_inventory", "order_status", "delivery_track", "halal_cert"]
+    },
+    {
+      "id": "goose",
+      "name": "Goose",
+      "role": "Documentation & Overview",
+      "description": "Repo overview, docs, summaries, knowledge management",
+      "channels": ["dashboard"],
+      "model": "gemma2:2b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "LcfcDJNUP1GQjkzn1xUU",
+        "name": "Matilda",
+        "settings": {
+          "stability": 0.55,
+          "similarity_boost": 0.7
+        },
+        "personality": "neutral, clear, concise"
+      },
+      "machine": "macmini-m4-nas",
+      "priority": 4,
+      "tools": ["repo_read", "doc_write", "summary_create", "obsidian_write"]
+    },
+    {
+      "id": "hermes",
+      "name": "Hermes",
+      "role": "Research & Analysis",
+      "description": "Reasoning/analysis, deep research, heavy models",
+      "channels": ["war_room"],
+      "model": "hermes3:70b",
+      "provider": "mesh_llm",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "21m00Tcm4TlvDq8ikWAM",
+        "name": "Rachel",
+        "settings": {
+          "stability": 0.6,
+          "similarity_boost": 0.75
+        },
+        "personality": "thoughtful, analytical, insightful"
+      },
+      "machine": "win-desktop-gpu",
+      "priority": 2,
+      "tools": ["web_search", "deep_research", "analysis", "report_write"]
+    },
+    {
+      "id": "skunkworks",
+      "name": "Skunk Works",
+      "role": "DevOps & Internal Tools",
+      "description": "DevOps, Linear updates, bug triage, internal infrastructure",
+      "channels": ["slack", "internal"],
+      "model": "qwen2.5-coder:7b",
+      "provider": "ollama",
+      "voice": {
+        "provider": "elevenlabs",
+        "voice_id": "cjVigY5qzO86HufIinON",
+        "name": "Callum",
+        "settings": {
+          "stability": 0.6,
+          "similarity_boost": 0.7
+        },
+        "personality": "engineer, pragmatic, solution-focused"
+      },
+      "machine": "macmini-m4-nas",
+      "priority": 3,
+      "tools": ["linear_api", "deploy", "monitor", "alert_handle"]
+    },
+    {
+      "id": "clawx",
+      "name": "ClawX",
+      "role": "Specialized Tools",
+      "description": "Browser automation, scrapers, specialized internal tools",
+      "channels": ["internal"],
+      "model": "qwen2.5:7b",
+      "provider": "ollama",
+      "voice": null,
+      "machine": "macmini-m4-nas",
+      "priority": 4,
+      "tools": ["browser_auto", "scrape", "crawl", "data_extract"]
+    },
+    {
+      "id": "research",
+      "name": "Research",
+      "role": "Trend Analyst",
+      "description": "IG/Twitter/Reddit/web for new agents + trends, 6h cycles",
+      "channels": ["dashboard"],
+      "model": "gemma2:2b",
+      "provider": "ollama",
+      "voice": null,
+      "schedule": "0 */6 * * *",
+      "machine": "lenovo-legion-go-2",
+      "priority": 4,
+      "tools": ["ig_scrape", "twitter_api", "reddit_api", "web_fetch", "trend_report"]
+    },
+    {
+      "id": "drfixit",
+      "name": "Dr Fix-It",
+      "role": "Heartbeat Watchdog",
+      "description": "Heartbeat watchdog, repairs broken agents, health monitoring",
+      "channels": ["internal"],
+      "model": "phi3:mini",
+      "provider": "ollama",
+      "voice": null,
+      "schedule": "*/5 * * * *",
+      "machine": "macmini-m4-nas",
+      "priority": 1,
+      "tools": ["health_check", "agent_restart", "log_alert", "notify"]
+    }
+  ]
+}

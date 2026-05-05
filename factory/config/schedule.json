@@ -1,0 +1,103 @@
+{
+  "schedule": {
+    "timezone": "Africa/Johannesburg",
+    "rituals": [
+      {
+        "name": "heartbeat_sweep",
+        "time": "07:55",
+        "cron": "55 7 * * *",
+        "duration_minutes": 5,
+        "agent": "drfixit",
+        "description": "Dr Fix-It pings every agent, restarts dead ones, prepares health report"
+      },
+      {
+        "name": "morning_standup",
+        "time": "08:00",
+        "cron": "0 8 * * *",
+        "duration_minutes": 30,
+        "agent": "robusca",
+        "description": "Daily standup: yesterday's wins, sales, social, costs, today's plan",
+        "agenda": [
+          "Yesterday's wins and achievements",
+          "Sales updates from StudEx stores",
+          "Social media performance metrics",
+          "Content performance analysis",
+          "Cost analysis vs break-even",
+          "Today's plan and priorities"
+        ]
+      },
+      {
+        "name": "board_of_chiefs",
+        "time": "09:00",
+        "cron": "0 9 * * *",
+        "duration_minutes": 60,
+        "moderator": "robusca",
+        "description": "Board of Chiefs standup meeting",
+        "participants": [
+          {
+            "agent": "cto",
+            "time_slot": "09:00-09:15",
+            "report": "STUDEX Agent Server Warehouse operations, agent health, restarts, updates, runtime, token consumption"
+          },
+          {
+            "agent": "openclaw",
+            "time_slot": "09:15-09:25",
+            "report": "Development progress on client projects, Agent Lab updates, Dark Factory pipelines"
+          },
+          {
+            "agent": "skunkworks",
+            "time_slot": "09:25-09:35",
+            "report": "DevOps updates, Linear ticket review, bugs, scheduled updates"
+          },
+          {
+            "agent": "cashclaw",
+            "time_slot": "09:35-09:50",
+            "report": "Sales reports, workflows, CRM status, revenue metrics"
+          },
+          {
+            "agent": "denchclaw",
+            "time_slot": "09:50-10:00",
+            "report": "Customer relations, signups, platform usage, support issues"
+          },
+          {
+            "agent": "research",
+            "time_slot": "10:00-10:10",
+            "report": "Traffic data, trends, new agents discovered on IG/Twitter/Reddit/web"
+          },
+          {
+            "agent": "hermes",
+            "time_slot": "10:10-10:25",
+            "report": "Research insights, infrastructure recommendations, efficiency analysis"
+          }
+        ]
+      },
+      {
+        "name": "hourly_heartbeat",
+        "time": "every hour",
+        "cron": "0 * * * *",
+        "agent": "drfixit",
+        "description": "Hourly ping health check"
+      },
+      {
+        "name": "research_scrape",
+        "time": "every 6 hours",
+        "cron": "0 */6 * * *",
+        "agent": "research",
+        "description": "Scrape new agents, frameworks, trends"
+      },
+      {
+        "name": "day_close",
+        "time": "23:00",
+        "cron": "0 23 * * *",
+        "duration_minutes": 15,
+        "agent": "robusca",
+        "description": "Day-close: token spend, agent runtime, cost-to-break-even delta written to vault"
+      }
+    ],
+    "working_hours": {
+      "start": "07:30",
+      "end": "23:30",
+      "weekend_reduced": true
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "project": "StudEx Valley OS",
+  "version": "1.0.0",
+  "timezone": "Africa/Johannesburg",
+  "currency": "ZAR",
+  "machines": [
+    {
+      "id": "mbp-m1-orchestrator",
+      "hostname": "studex-orchestrator",
+      "name": "MacBook Pro M1",
+      "role": "orchestrator",
+      "specs": {
+        "cpu": "Apple M1",
+        "ram_gb": 32,
+        "storage_tb": 1,
+        "os": "macOS"
+      },
+      "responsibilities": [
+        "Robusca daily standup",
+        "Board of Chiefs coordination",
+        "Classifier routing",
+        "Cost Footer tracking",
+        "Scheduler"
+      ],
+      "priority": 1
+    },
+    {
+      "id": "macmini-m4-nas",
+      "hostname": "studex-nas",
+      "name": "Mac Mini M4",
+      "role": "nas",
+      "specs": {
+        "cpu": "Apple M4",
+        "ram_gb": 16,
+        "storage_tb": 0.256,
+        "external_storage_tb": 6,
+        "os": "macOS"
+      },
+      "responsibilities": [
+        "Memory v2 (SQLite)",
+        "Obsidian vault",
+        "AnythingLLM server",
+        "launchd services",
+        "Cloudflare Tunnel"
+      ],
+      "priority": 2
+    },
+    {
+      "id": "win-desktop-gpu",
+      "hostname": "studex-gpu",
+      "name": "Windows Desktop",
+      "role": "gpu",
+      "specs": {
+        "cpu": "Intel/AMD",
+        "ram_gb": 16,
+        "storage_tb": 2,
+        "gpus": [
+          {"vram_gb": 8},
+          {"vram_gb": 8}
+        ],
+        "os": "Windows 11"
+      },
+      "responsibilities": [
+        "mesh-llm host",
+        "Large model inference",
+        "Hermes 70B",
+        "Qwen-Coder big quant",
+        "Training workloads"
+      ],
+      "mesh_port": 9337,
+      "priority": 3
+    },
+    {
+      "id": "legion-go-2",
+      "hostname": "studex-mobile",
+      "name": "Lenovo Legion Go 2",
+      "role": "mobile",
+      "specs": {
+        "cpu": "AMD Ryzen",
+        "ram_gb": 16,
+        "storage_tb": 1,
+        "os": "Windows 11"
+      },
+      "responsibilities": [
+        "Roaming research",
+        "Content compute",
+        "Mobile demos",
+        "Offsite operations"
+      ],
+      "priority": 4
+    },
+    {
+      "id": "win-laptop-voice",
+      "hostname": "studex-voice",
+      "name": "Windows Laptop",
+      "role": "voice",
+      "specs": {
+        "cpu": "Intel/AMD",
+        "ram_gb": 16,
+        "gpu_vram_gb": 8,
+        "os": "Windows 11"
+      },
+      "responsibilities": [
+        "Groq Whisper STT",
+        "Pipecat War Room",
+        "ElevenLabs proxy",
+        "Voice processing edge"
+      ],
+      "priority": 5
+    }
+  ],
+  "network": {
+    "mesh_provider": "tailscale",
+    "mesh_network": "studex-valley.ts.net",
+    "api_port": 4200,
+    "dashboard_port": 3141,
+    "war_room_port": 7860,
+    "mesh_llm_port": 9337
+  }
+}

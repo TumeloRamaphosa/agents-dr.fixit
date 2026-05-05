@@ -1,0 +1,93 @@
+{
+  "subscriptions": [
+    {
+      "name": "Anthropic Claude API",
+      "service": "anthropic",
+      "tier": "Sonnet + Haiku",
+      "monthly_cost_usd": 20,
+      "usage_pattern": "Escalated queries, complex reasoning, agent coordination",
+      "cost_control": "Only when local models can't handle, Cost Footer tracks"
+    },
+    {
+      "name": "ElevenLabs",
+      "service": "elevenlabs",
+      "tier": "Creator",
+      "monthly_cost_usd": 22,
+      "usage_pattern": "Voice for all agents with voice=true",
+      "cost_control": "Cache voice clips, use local TTS fallback"
+    },
+    {
+      "name": "Groq API",
+      "service": "groq",
+      "tier": "Free tier + Pay as you go",
+      "monthly_cost_usd": 10,
+      "usage_pattern": "Whisper STT, fast inference",
+      "cost_control": "Local Whisper for routine, Groq for speed"
+    },
+    {
+      "name": "Tailscale",
+      "service": "tailscale",
+      "tier": "Personal (free)",
+      "monthly_cost_usd": 0,
+      "usage_pattern": "Mesh network for 5 machines",
+      "cost_control": "Free tier sufficient"
+    },
+    {
+      "name": "Cloudflare",
+      "service": "cloudflare",
+      "tier": "Free + Tunnel",
+      "monthly_cost_usd": 0,
+      "usage_pattern": "Tunnel for remote access",
+      "cost_control": "Free tier with tunnel"
+    },
+    {
+      "name": "Daily.co",
+      "service": "daily",
+      "tier": "Pay as you go",
+      "monthly_cost_usd": 15,
+      "usage_pattern": "War Room video calls",
+      "cost_control": "Only for active war rooms"
+    },
+    {
+      "name": "Pika Labs",
+      "service": "pika",
+      "tier": "Standard",
+      "monthly_cost_usd": 10,
+      "usage_pattern": "Avatar generation for meeting bot",
+      "cost_control": "Pre-generate, cache"
+    },
+    {
+      "name": "Base44",
+      "service": "base44",
+      "tier": "Pro",
+      "monthly_cost_usd": 20,
+      "usage_pattern": "Landing page hosting",
+      "cost_control": "Static export when possible"
+    },
+    {
+      "name": "Linear",
+      "service": "linear",
+      "tier": "Free",
+      "monthly_cost_usd": 0,
+      "usage_pattern": "Ticket tracking",
+      "cost_control": "Free tier"
+    },
+    {
+      "name": "OpenRouter",
+      "service": "openrouter",
+      "tier": "Pay as you go",
+      "monthly_cost_usd": 5,
+      "usage_pattern": "Fallback models",
+      "cost_control": "Only emergency fallback"
+    }
+  ],
+  "total_monthly_burn_usd": 102,
+  "total_monthly_burn_zar": 1900,
+  "break_even_target_zar": 5000,
+  "local_cost_savings_vs_cloud": "~85%",
+  "cost_tracking": {
+    "daily_budget_usd": 3.4,
+    "alert_threshold_percent": 80,
+    "shutdown_threshold_percent": 120
+  }
+}
