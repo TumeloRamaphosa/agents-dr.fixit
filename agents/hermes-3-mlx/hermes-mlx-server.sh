@@ -12,7 +12,7 @@ CONFIG_FILE="${SCRIPT_DIR}/config.env"
 
 # Default config
 MODEL_ID="${HERMES_MODEL:-mlx-community/Hermes-3-Llama-3.1-8B-4bit}"
-PORT="${HERMES_PORT:-8000}"
+PORT="${HERMES_PORT:-8090}"
 HOST="${HERMES_HOST:-127.0.0.1}"
 
 # Ensure log directory exists

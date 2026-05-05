@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"
 
 # MLX Configuration
-MLX_URL="${MLX_URL:-http://127.0.0.1:8000/v1}"
+MLX_URL="${MLX_URL:-http://127.0.0.1:8090/v1}"
 MODEL_ID="${HERMES_MODEL:-mlx-community/Hermes-3-Llama-3.1-8B-4bit}"
 
 echo "╔════════════════════════════════════════════════════════════╗"

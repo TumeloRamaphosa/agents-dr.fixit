@@ -12,7 +12,7 @@ LOCK_FILE="/tmp/${AGENT_NAME}.lock"
 
 # Configuration
 MLX_HOST="${MLX_HOST:-127.0.0.1}"
-MLX_PORT="${MLX_PORT:-8000}"
+MLX_PORT="${MLX_PORT:-8090}"
 MLX_URL="http://${MLX_HOST}:${MLX_PORT}/v1"
 MODEL_ID="${HERMES_MODEL:-mlx-community/Hermes-3-Llama-3.1-8B-4bit}"
 
