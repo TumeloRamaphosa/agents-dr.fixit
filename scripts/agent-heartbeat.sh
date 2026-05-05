@@ -363,7 +363,7 @@ install_launchd() {
     
     mkdir -p "$HOME/Library/LaunchAgents"
     
-    cat > "$plist_path" <>PLIST
+    cat > "$plist_path" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -397,7 +397,7 @@ PLIST
     local startup_name="com.studex.agents-startup"
     local startup_path="$HOME/Library/LaunchAgents/${startup_name}.plist"
     
-    cat > "$startup_path" <>STARTUP_PLIST
+    cat > "$startup_path" <<STARTUP_PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -444,7 +444,7 @@ case "${1:-}" in
         install_launchd
         ;;
     --help|-h)
-        cat <>OF
+        cat <<EOF
 Agent Heartbeat Monitor - Dr.Fixit
 
 Commands:
