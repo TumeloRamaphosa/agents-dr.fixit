@@ -1,0 +1,25 @@
+# OpenFang + MLX Optimized Configuration
+
+[default_model]
+provider = "ollama"
+model = "gemma4:latest"
+
+[mlx]
+# MLX endpoints (super fast on Apple Silicon)
+enabled = true
+gemma_endpoint = "http://127.0.0.1:11500/v1"
+qwen_endpoint = "http://127.0.0.1:11501/v1"
+llama_endpoint = "http://127.0.0.1:11502/v1"
+
+[performance]
+# Always prefer MLX, fallback to Ollama
+prefer_mlx = true
+parallel_agents = 9
+temperature = 0.3
+max_tokens = 4096
+
+[memory]
+decay_rate = 0.05
+
+[network]
+listen_addr = "127.0.0.1:4200"
