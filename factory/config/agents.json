@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "codename": "robusca",
+      "role": "chief-of-staff",
+      "display_name": "Robusca",
+      "description": "Chief of Staff — warm SA-English female voice. Anchors 08:00 standup and 09:00 Council.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5-coder:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" },
+        "alternates": [
+          { "provider": "openrouter", "name": "anthropic/claude-sonnet-4-6" },
+          { "provider": "groq", "name": "llama-3.1-70b-versatile" }
+        ]
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": ["0 8 * * *", "0 9 * * *"]
+    },
+    {
+      "codename": "cashclaw",
+      "role": "sales",
+      "display_name": "CashClaw (Adam)",
+      "description": "Sales — confident male voice. Anchored to Studex Meat pipeline.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5-coder:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" },
+        "alternates": [
+          { "provider": "openrouter", "name": "anthropic/claude-sonnet-4-6" },
+          { "provider": "groq", "name": "llama-3.1-70b-versatile" }
+        ]
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    },
+    {
+      "codename": "denchclaw",
+      "role": "customer",
+      "display_name": "DenchClaw",
+      "description": "Customer — friendly SA-English voice. Handles signups and support.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    },
+    {
+      "codename": "charlie",
+      "role": "customer",
+      "display_name": "Charlie",
+      "description": "Customer — Studex Meat customer queue specialist.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    },
+    {
+      "codename": "research",
+      "role": "research",
+      "display_name": "Research",
+      "description": "Research — curious voice. Owns Night Build problem picks. Ledger insights.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5-coder:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": ["0 22 * * *"]
+    },
+    {
+      "codename": "openfang",
+      "role": "research",
+      "display_name": "OpenFang",
+      "description": "Research — social/web scrape. SGM partner news.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    },
+    {
+      "codename": "cto",
+      "role": "devops",
+      "display_name": "CTO",
+      "description": "DevOps — brief engineer voice. Uses Cursor IDE with local Ollama.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5-coder:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    },
+    {
+      "codename": "skunkworks",
+      "role": "devops",
+      "display_name": "Skunk Works",
+      "description": "DevOps — builds prototypes during Night Build. Receives hand-offs from Research.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5-coder:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    },
+    {
+      "codename": "drfixit",
+      "role": "devops",
+      "display_name": "Dr Fix-It",
+      "description": "DevOps — monitoring and repair. Heartbeats and anomaly detection.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "phi3:mini", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": ["0 * * * *"]
+    },
+    {
+      "codename": "the-lady",
+      "role": "media",
+      "display_name": "The Lady",
+      "description": "Media — polished female voice. Content performance and audience reactions.",
+      "model": {
+        "primary": { "provider": "ollama", "name": "qwen2.5:7b", "base_url": "" },
+        "escalate": { "provider": "anthropic", "name": "claude-sonnet-4-6" }
+      },
+      "voice": { "elevenlabs_id": "SET_IN_AGENTS_JSON" },
+      "channels": ["slack", "discord"],
+      "schedule": []
+    }
+  ]
+}

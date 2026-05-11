@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "tiers": [
+    {
+      "name": "Aspire",
+      "price": 99,
+      "currency": "USD",
+      "period": "month",
+      "features": ["basic-access", "daily-reports", "community-support"]
+    },
+    {
+      "name": "Growth",
+      "price": 499,
+      "currency": "USD",
+      "period": "month",
+      "features": ["priority-access", "weekly-calls", "dedicated-support"]
+    },
+    {
+      "name": "Enterprise",
+      "price": 2500,
+      "currency": "USD",
+      "period": "month",
+      "features": ["full-access", "daily-calls", "account-manager", "custom-reports"]
+    },
+    {
+      "name": "Ghost",
+      "price": 7500,
+      "currency": "USD",
+      "period": "month",
+      "features": ["unlimited-access", "24-7-support", "custom-integrations", "white-label"]
+    }
+  ]
+}

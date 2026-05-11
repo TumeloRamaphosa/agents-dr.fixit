@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "council": {
+    "time": "09:00",
+    "timezone": "Africa/Johannesburg",
+    "duration_minutes": 15,
+    "voice_enabled": false,
+    "order": [
+      "robusca",
+      "cto",
+      "skunkworks",
+      "drfixit",
+      "cashclaw",
+      "denchclaw",
+      "charlie",
+      "research",
+      "openfang",
+      "the-lady",
+      "robusca"
+    ],
+    "max_seconds_per_agent": 90,
+    "drop_in_commands": ["@<codename> more", "@<codename> show <thing>", "/decide <text>", "/end"],
+    "transcript_path": "meetings/<date>-council.md"
+  },
+  "standup": {
+    "time": "08:00",
+    "timezone": "Africa/Johannesburg",
+    "agent": "robusca",
+    "output_path": "daily/<date>.md"
+  }
+}

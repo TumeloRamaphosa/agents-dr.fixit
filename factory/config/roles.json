@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "roles": {
+    "chief-of-staff": {
+      "agents": ["robusca"],
+      "permissions": ["mission.read", "mission.move", "vault.read", "vault.write_meeting_report", "bridge.slack", "bridge.discord", "schedule.read"],
+      "denies": ["git.push_main", "real_money.*", "shell.exec.unrestricted"]
+    },
+    "sales": {
+      "agents": ["cashclaw"],
+      "permissions": ["crm.read", "crm.write", "mission.read", "bridge.slack", "vault.read"],
+      "denies": ["git.*", "shell.*", "real_money.*"]
+    },
+    "customer": {
+      "agents": ["denchclaw", "charlie"],
+      "permissions": ["support.read", "support.write", "mission.read", "bridge.slack", "vault.read"],
+      "denies": ["git.*", "shell.*", "real_money.*"]
+    },
+    "research": {
+      "agents": ["research", "openfang"],
+      "permissions": ["web.scrape", "web.search", "vault.read", "vault.write_research", "mission.read", "mission.move", "bridge.slack"],
+      "denies": ["git.push_main", "shell.exec.unrestricted", "real_money.*"]
+    },
+    "devops": {
+      "agents": ["cto", "skunkworks", "drfixit"],
+      "permissions_cto": [
+        "cursor.open_project", "cursor.run_cli", "cursor.spawn_background_agent", "cursor.get_agent",
+        "git.read", "git.write_branch", "github.read", "github.write_pr",
+        "shell.exec.allowlist", "vault.read", "vault.write_meeting_report",
+        "mission.read", "mission.move", "bridge.slack", "bridge.discord"
+      ],
+      "denies_cto": ["git.push_main", "shell.exec.unrestricted", "real_money.*"],
+      "permissions_skunkworks": ["git.read", "git.write_branch", "shell.exec.allowlist", "vault.read", "mission.read"],
+      "permissions_drfixit": ["shell.exec.allowlist", "vault.read", "mission.read", "system.heartbeat"]
+    },
+    "media": {
+      "agents": ["the-lady"],
+      "permissions": ["content.read", "content.write", "bridge.slack", "bridge.discord", "vault.read", "mission.read"],
+      "denies": ["git.*", "shell.*", "real_money.*"]
+    }
+  }
+}

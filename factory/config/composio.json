@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "connectors": {
+    "facebook": { "status": "connected", "owner": "tumelo" },
+    "gmail": { "status": "pending" },
+    "calendar": { "status": "pending" },
+    "slack": { "status": "pending" },
+    "x": { "status": "pending" },
+    "instagram": { "status": "pending" }
+  }
+}

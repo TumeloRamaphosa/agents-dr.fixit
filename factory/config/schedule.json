@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "timezone": "Africa/Johannesburg",
+  "cron": {
+    "snapshot_7am": "0 7 * * *",
+    "standup_8am": "0 8 * * *",
+    "council_9am": "0 9 * * *",
+    "snapshot_12pm": "0 12 * * *",
+    "snapshot_5pm": "0 17 * * *",
+    "night_build_start": "0 22 * * *",
+    "snapshot_midnight": "0 0 * * *",
+    "night_build_kill": "0 2 * * *",
+    "heartbeat_hourly": "0 * * * *"
+  },
+  "idle_hours": "22-02",
+  "night_build": {
+    "start": "22:00",
+    "hard_stop": "02:00",
+    "product_count": 2,
+    "mode": "strict",
+    "local_only": true
+  }
+}

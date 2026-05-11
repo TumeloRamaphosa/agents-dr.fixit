@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "machines": [
+    {
+      "id": "mac-mini-m4",
+      "name": "Mac Mini M4 Pro",
+      "specs": "16GB RAM, Apple Silicon",
+      "role": "primary-server",
+      "ip": "localhost",
+      "services": ["ollama", "valley-os", "dashboard", "chromadb", "n8n"]
+    },
+    {
+      "id": "windows-gpu",
+      "name": "Windows PC",
+      "specs": "Dual GTX 1080",
+      "ip": "192.168.1.114",
+      "role": "gpu-compute",
+      "services": ["ollama", "lm-studio"]
+    }
+  ],
+  "services": {
+    "ollama": { "port": 11434, "status": "required" },
+    "dashboard": { "port": 3141, "status": "required" },
+    "n8n": { "port": 5678, "status": "optional" },
+    "chromadb": { "port": 8000, "status": "optional" }
+  }
+}
