@@ -1,0 +1,68 @@
+{
+    "workbench.colorTheme": "Default High Contrast",
+    "terminal.integrated.sendKeybindingsToShell": true,
+    "terminal.integrated.commandsToSkipShell": [
+        "ee",
+        "kilo-code.new.agentManagerOpen",
+        "kilo-code.new.agentManager.showTerminal"
+    ],
+    "window.zoomLevel": 1,
+    "gitlens.ai.model": "vscode",
+    "gitlens.ai.vscode.model": "aitk-github:aitk",
+    "@azure.argTenant": "",
+    "chat.hookFilesLocations": {
+        ".github/hooks": true,
+        ".claude/settings.local.json": true,
+        ".claude/settings.json": true,
+        "~/.copilot/hooks": true,
+        "~/.claude/settings.json": true,
+        "~/.agents/hooks": true
+    },
+    "workbench.preferredHighContrastColorTheme": "Solarized Light",
+    "claudeCode.preferredLocation": "panel",
+    
+    "studex.ollama.enabled": true,
+    "studex.ollama.host": "http://localhost:11434",
+    "studex.ollama.defaultModel": "qwen2.5-coder:7b",
+    
+    "github.copilot.advanced": {
+        "authProvider": "github",
+        "debug.overrideEngine": "copilot-codex",
+        "debug.useLocalProxy": false
+    },
+    
+    "continue.models": [
+        {
+            "title": "Qwen Coder (Local)",
+            "provider": "ollama",
+            "model": "qwen2.5-coder:7b",
+            "apiBase": "http://localhost:11434"
+        },
+        {
+            "title": "DeepSeek Pro (Local)",
+            "provider": "ollama",
+            "model": "deepseek-v4-pro:cloud",
+            "apiBase": "http://localhost:11434"
+        },
+        {
+            "title": "Phi Fast (Local)",
+            "provider": "ollama",
+            "model": "phi4-mini:latest",
+            "apiBase": "http://localhost:11434"
+        },
+        {
+            "title": "SambaNova (Cloud)",
+            "provider": "openai",
+            "model": "Meta-Llama-3.1-405B-Instruct",
+            "apiKey": "sk-srkbdzxsrncgo8q7t5eb1wmtwzt7g3s8x335rg485ucc5epk",
+            "apiBase": "https://api.sambanova.ai/v1"
+        }
+    ],
+    "continue.defaultModel": "Qwen Coder (Local)",
+    "continue.tabAutocompleteModel": {
+        "title": "Tab Autocomplete",
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "apiBase": "http://localhost:11434"
+    }
+}

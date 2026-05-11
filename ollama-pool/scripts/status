@@ -1,0 +1,100 @@
+#!/bin/zsh
+# Studex Ollama Pool Status Checker
+
+echo "═══════════════════════════════════════════════════════════════"
+echo "         🤖 STUDEX MULTI-AI POOL STATUS"
+echo "═══════════════════════════════════════════════════════════════"
+echo ""
+
+# Check Ollama
+printf "%-30s " "Ollama Service:"
+if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+    echo "✅ Running (localhost:11434)"
+elif curl -s http://192.168.1.114:11434/api/tags >/dev/null 2>&1; then
+    echo "✅ Running (Windows PC: 192.168.1.114:11434)"
+else
+    echo "❌ Not responding"
+fi
+
+# Check LiteLLM Proxy
+printf "%-30s " "LiteLLM Proxy:"
+if curl -s http://localhost:8000/health 2>/dev/null | grep -q "healthy"; then
+    echo "✅ Running (localhost:8000)"
+else
+    echo "❌ Not running"
+fi
+
+# Check available models
+echo ""
+echo "────────────────────────────────────────────────────────────────"
+echo "LOCAL MODELS:"
+echo "────────────────────────────────────────────────────────────────"
+
+if curl -s http://localhost:11434/api/tags 2>/dev/null | python3 -m json.tool 2>/dev/null | grep -q "name"; then
+    curl -s http://localhost:11434/api/tags 2>/dev/null | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for m in data.get('models', []):
+    size = m.get('size', 0) / (1024**3)
+    print(f'  ✅ {m[\"name\"]:25} {size:.1f} GB  {m.get(\"details\", {}).get(\"parameter_size\", \"\"), \"\")}')
+" 2>/dev/null || echo "  (Parse error)"
+else
+    echo "  ❌ Cannot fetch models"
+fi
+
+echo ""
+echo "────────────────────────────────────────────────────────────────"
+echo "CLOUD BACKUP (SambaNova):"
+echo "────────────────────────────────────────────────────────────────"
+printf "  %-28s " "Meta-Llama-3.1-405B:"
+if curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer sk-srkbdzxsrncgo8q7t5eb1wmtwzt7g3s8x335rg485ucc5epk" \
+    https://api.sambanova.ai/v1/models 2>/dev/null | grep -q "200"; then
+    echo "✅ Available"
+else
+    echo "⚠️  Check manually"
+fi
+
+echo ""
+echo "────────────────────────────────────────────────────────────────"
+echo "INTEGRATIONS:"
+echo "────────────────────────────────────────────────────────────────"
+printf "  %-28s " "Cursor Settings:"
+[ -f ~/.cursor/settings.json ] && echo "✅ Configured" || echo "❌ Missing"
+
+printf "  %-28s " "VS Code Settings:"
+[ -f ~/Library/Application\ Support/Code/User/settings.json ] && echo "✅ Configured" || echo "❌ Missing"
+
+printf "  %-28s " "LiteLLM Config:"
+[ -f ~/.config/litellm/config.yaml ] && echo "✅ Configured" || echo "❌ Missing"
+
+printf "  %-28s " "Pool Command:"
+[ -f ~/.studex-ollama-pool.sh ] && echo "✅ Ready" || echo "❌ Missing"
+
+echo ""
+echo "────────────────────────────────────────────────────────────────"
+echo "QUICK COMMANDS:"
+echo "────────────────────────────────────────────────────────────────"
+echo "  Start LiteLLM:    studex-litellm"
+echo "  Pool command:     pool <command> [model] 'prompt'"
+echo "  List models:      pool list"
+echo "  Chat mode:        pool chat [model]"
+echo "  Compare models:   pool compare 'prompt'"
+echo "  Local only:       pool codex 'your prompt'"
+echo "  Cloud only:       pool cloud 'your prompt'"
+echo ""
+echo "────────────────────────────────────────────────────────────────"
+echo "MODEL ALIASES:"
+echo "────────────────────────────────────────────────────────────────"
+echo "  codex/coder → qwen2.5-coder:7b     (Default coding model)"
+echo "  deepseek    → deepseek-v4-pro:cloud  (Reasoning)"
+echo "  qwen-pro    → qwen3.5:latest         (Latest generation)"
+echo "  phi         → phi4-mini:latest       (Fast)"
+echo "  llama       → llama3.2:latest       (Lightweight)"
+echo "  gemma       → gemma4:latest         (Google model)"
+echo "  hermes      → hermes3:latest         (Chat/dialogue)"
+echo "  nous        → nous-hermes2:latest   (Advanced reasoning)"
+echo "  sambanova   → Meta-Llama-3.1-405B    (Cloud fallback)"
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "Run: source ~/.zshrc  # to reload shell with pool command"
+echo "═══════════════════════════════════════════════════════════════"

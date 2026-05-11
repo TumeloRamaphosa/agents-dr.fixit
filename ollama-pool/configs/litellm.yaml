@@ -1,0 +1,134 @@
+#####################################################
+# LiteLLM Proxy Configuration - Ollama Models
+# Studex Multi-AI Router
+#####################################################
+
+# Ollama Local Models
+model_list:
+  # Coding Models
+  - model_name: codex-local
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://localhost:11434
+      timeout: 300
+
+  - model_name: qwen-coder
+    litellm_params:
+      model: ollama/qwen2.5-coder:7b
+      api_base: http://localhost:11434
+      timeout: 300
+
+  - model_name: deepseek-local
+    litellm_params:
+      model: ollama/deepseek-v4-pro:cloud
+      api_base: http://localhost:11434
+      timeout: 600
+
+  # General Purpose Models
+  - model_name: qwen-local
+    litellm_params:
+      model: ollama/qwen2.5:7b
+      api_base: http://localhost:11434
+      timeout: 300
+
+  - model_name: qwen-pro
+    litellm_params:
+      model: ollama/qwen3.5:latest
+      api_base: http://localhost:11434
+      timeout: 300
+
+  - model_name: phi-fast
+    litellm_params:
+      model: ollama/phi4-mini:latest
+      api_base: http://localhost:11434
+      timeout: 120
+
+  - model_name: llama-fast
+    litellm_params:
+      model: ollama/llama3.2:latest
+      api_base: http://localhost:11434
+      timeout: 120
+
+  - model_name: gemma-local
+    litellm_params:
+      model: ollama/gemma4:latest
+      api_base: http://localhost:11434
+      timeout: 300
+
+  # Reasoning/Chat Models
+  - model_name: hermes-local
+    litellm_params:
+      model: ollama/hermes3:latest
+      api_base: http://localhost:11434
+      timeout: 300
+
+  - model_name: nous-hermes
+    litellm_params:
+      model: ollama/nous-hermes2:latest
+      api_base: http://localhost:11434
+      timeout: 300
+
+  # Embedding Model
+  - model_name: embed-local
+    litellm_params:
+      model: ollama/nomic-embed-text:latest
+      api_base: http://localhost:11434
+      timeout: 60
+
+  # Tiny for testing
+  - model_name: tiny-test
+    litellm_params:
+      model: ollama/tinyllama:latest
+      api_base: http://localhost:11434
+      timeout: 60
+
+  # Fallback to SambaNova
+  - model_name: codex-cloud
+    litellm_params:
+      model: sambanova/Meta-Llama-3.1-405B-Instruct
+      api_key: os.environ/SAMBANOVA_API_KEY
+      timeout: 300
+
+  # GitHub Models (if available)
+  - model_name: copilot-cloud
+    litellm_params:
+      model: github/gpt-4
+      api_key: os.environ/GITHUB_TOKEN
+      timeout: 300
+
+# Router Settings
+router_settings:
+  routing_strategy: simple-shuffle
+  timeout: 300
+  allowed_fails: 3
+
+# General Settings
+general_settings:
+  master_key: sk-studex-local-123
+  port: 8000
+  log_level: INFO
+  telemetry: false
+
+# Rate Limits
+ratelimit_settings:
+  - model: codex-local
+    rpm: 60
+    tpm: 100000
+  - model: qwen-coder
+    rpm: 60
+    tpm: 100000
+  - model: phi-fast
+    rpm: 120
+    tpm: 200000
+
+# Fallbacks
+fallbacks:
+  - qwen-coder:
+    - codex-local
+    - deepseek-local
+  - codex-local:
+    - qwen-coder
+    - deepseek-local
+  - deepseek-local:
+    - nous-hermes
+    - qwen-pro

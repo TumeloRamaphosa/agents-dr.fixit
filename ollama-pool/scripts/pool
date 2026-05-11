@@ -1,0 +1,373 @@
+#!/bin/zsh
+# Studex Ollama Multi-Model Pool
+# Unified interface for all Ollama models across Codex, Copilot, Droid, Cloud, Local
+
+OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}"
+OLLAMA_MODEL="${OLLAMA_MODEL:-qwen2.5-coder:7b}"
+
+# Available models with descriptions
+declare -A MODELS=(
+    ["codex"]="qwen2.5-coder:7b"
+    ["coder"]="qwen2.5-coder:7b"
+    ["deepseek"]="deepseek-v4-pro:cloud"
+    ["qwen"]="qwen2.5:7b"
+    ["qwen-pro"]="qwen3.5:latest"
+    ["phi"]="phi4-mini:latest"
+    ["llama"]="llama3.2:latest"
+    ["gemma"]="gemma4:latest"
+    ["hermes"]="hermes3:latest"
+    ["nous"]="nous-hermes2:latest"
+    ["embed"]="nomic-embed-text:latest"
+    ["tiny"]="tinyllama:latest"
+    ["sambanova"]="sambanova"
+    ["cloud"]="deepseek-v4-pro:cloud"
+)
+
+# Context length for each model
+declare -A CONTEXT_LENGTH=(
+    ["qwen2.5-coder:7b"]="32768"
+    ["qwen2.5:7b"]="32768"
+    ["qwen3.5:latest"]="128000"
+    ["deepseek-v4-pro:cloud"]="64000"
+    ["phi4-mini:latest"]="128000"
+    ["llama3.2:latest"]="128000"
+    ["gemma4:latest"]="128000"
+    ["hermes3:latest"]="128000"
+    ["nous-hermes2:latest"]="32000"
+    ["nomic-embed-text:latest"]="8192"
+    ["tinyllama:latest"]="2048"
+)
+
+# Function to get full model name from alias
+get_model() {
+    local alias="$1"
+    if [[ -n "${MODELS[$alias]}" ]]; then
+        echo "${MODELS[$alias]}"
+    else
+        echo "$alias"
+    fi
+}
+
+# Help message
+show_help() {
+    cat << 'EOF'
+╔══════════════════════════════════════════════════════════════════════╗
+║               STUDEX OLLAMA MULTI-MODEL POOL                       ║
+╠══════════════════════════════════════════════════════════════════════╣
+║                                                                      ║
+║  USAGE: pool <command> [options]                                     ║
+║                                                                      ║
+║  COMMANDS:                                                           ║
+║    codex [model] <prompt>     → Code generation (default: coder)    ║
+║    copilot [model] <prompt>   → Pair programming assistance          ║
+║    droid [model] <prompt>     → Mobile/Android dev help              ║
+║    cloud [model] <prompt>     → Use cloud models via SambaNova     ║
+║    embed <text>               → Generate embeddings                  ║
+║    chat [model]              → Interactive chat mode                 ║
+║    list                      → Show all available models           ║
+║    test <model>              → Test a model with simple prompt     ║
+║    compare <prompt>          → Run prompt on multiple models         ║
+║                                                                      ║
+║  MODELS (aliases):                                                   ║
+║    codex/coder → qwen2.5-coder:7b     Best for code generation     ║
+║    deepseek    → deepseek-v4-pro:cloud  Reasoning & complex tasks    ║
+║    qwen-pro    → qwen3.5:latest        Latest Qwen generation       ║
+║    phi         → phi4-mini:latest       Fast responses               ║
+║    llama       → llama3.2:latest      Lightweight                  ║
+║    gemma       → gemma4:latest        Latest Gemma                 ║
+║    nous        → nous-hermes2:latest    Advanced reasoning           ║
+║    sambanova   → Meta-Llama-3.1-405B  Cloud fallback               ║
+║                                                                      ║
+║  EXAMPLES:                                                           ║
+║    pool codex "Review this code for bugs"                            ║
+║    pool codex deepseek "Explain this algorithm"                    ║
+║    pool copilot "Help me refactor this function"                    ║
+║    pool compare "What is the best way to handle errors in Go?"      ║
+║    pool chat phi                                                    ║
+║    pool embed "vectorize this text"                                 ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+EOF
+}
+
+# Code generation mode (codex)
+codex_mode() {
+    local model="$OLLAMA_MODEL"
+    local prompt=""
+    
+    # Check if first arg is a model alias
+    if [[ -n "${MODELS[$1]}" ]]; then
+        model="$(get_model $1)"
+        shift
+    fi
+    
+    prompt="$*"
+    
+    if [[ -z "$prompt" ]]; then
+        echo "Usage: pool codex [model] <prompt>"
+        echo "Example: pool codex 'Write a Python function to sort a list'"
+        return 1
+    fi
+    
+    echo "🤖 Studex Codex using: $model"
+    echo "─────────────────────────────────────────────────────"
+    
+    ollama run "$model" "You are an expert coding assistant. Your task is to write clean, efficient code with best practices. Include comments and error handling.
+
+Task: $prompt
+
+Provide only the code solution first, then a brief explanation of key design decisions."
+}
+
+# Copilot mode (pair programming)
+copilot_mode() {
+    local model="$OLLAMA_MODEL"
+    local prompt=""
+    
+    if [[ -n "${MODELS[$1]}" ]]; then
+        model="$(get_model $1)"
+        shift
+    fi
+    
+    prompt="$*"
+    
+    if [[ -z "$prompt" ]]; then
+        echo "Usage: pool copilot [model] <prompt>"
+        return 1
+    fi
+    
+    echo "👨‍💻 Studex Copilot using: $model"
+    echo "─────────────────────────────────────────────────────"
+    
+    ollama run "$model" "You are a helpful pair programmer. Review code carefully, suggest improvements, and explain your reasoning. Be conversational but technical.
+
+Context: Working on a project using modern best practices.
+
+Request: $prompt"
+}
+
+# Droid mode (mobile development)
+droid_mode() {
+    local model="$OLLAMA_MODEL"
+    local prompt=""
+    
+    if [[ -n "${MODELS[$1]}" ]]; then
+        model="$(get_model $1)"
+        shift
+    fi
+    
+    prompt="$*"
+    
+    if [[ -z "$prompt" ]]; then
+        echo "Usage: pool droid [model] <prompt>"
+        return 1
+    fi
+    
+    echo "🤖 Studex Droid using: $model"
+    echo "─────────────────────────────────────────────────────"
+    
+    ollama run "$model" "You are an Android/mobile development expert. Provide Kotlin/Java or React Native code following Material Design principles and best practices.
+
+Task: $prompt
+
+Include performance considerations and platform-specific optimizations where relevant."
+}
+
+# Cloud mode (SambaNova)
+cloud_mode() {
+    local model="Meta-Llama-3.1-405B-Instruct"
+    local prompt="$*"
+    
+    if [[ -z "$prompt" ]]; then
+        echo "Usage: pool cloud <prompt>"
+        return 1
+    fi
+    
+    echo "☁️  Studex Cloud (SambaNova) using: $model"
+    echo "─────────────────────────────────────────────────────"
+    
+    # Check if litellm is running
+    if curl -s http://localhost:8000/health 2>/dev/null | grep -q "healthy"; then
+        curl -s http://localhost:8000/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer sk-studex-local-123" \
+            -d "{
+                \"model\": \"codex-cloud\",
+                \"messages\": [{\"role\": \"user\", \"content\": \"$prompt\"}],
+                \"temperature\": 0.7
+            }" | jq -r '.choices[0].message.content' 2>/dev/null || echo "Cloud request failed"
+    else
+        echo "⚠️  LiteLLM proxy not running. Starting with direct SambaNova call..."
+        # Fallback to direct call
+        curl -s https://api.sambanova.ai/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer sk-srkbdzxsrncgo8q7t5eb1wmtwzt7g3s8x335rg485ucc5epk" \
+            -d "{
+                \"model\": \"Meta-Llama-3.1-405B-Instruct\",
+                \"messages\": [{\"role\": \"user\", \"content\": \"$prompt\"}],
+                \"temperature\": 0.7
+            }" | jq -r '.choices[0].message.content' 2>/dev/null || echo "Cloud request failed"
+    fi
+}
+
+# Embedding mode
+embed_mode() {
+    local text="$*"
+    
+    if [[ -z "$text" ]]; then
+        echo "Usage: pool embed <text to embed>"
+        return 1
+    fi
+    
+    echo "📊 Generating embedding using: nomic-embed-text:latest"
+    
+    ollama run nomic-embed-text:latest "$text"
+}
+
+# Interactive chat mode
+chat_mode() {
+    local model="$OLLAMA_MODEL"
+    
+    if [[ -n "${MODELS[$1]}" ]]; then
+        model="$(get_model $1)"
+        shift
+    fi
+    
+    echo "💬 Interactive Chat Mode"
+    echo "Model: $model"
+    echo "Type 'exit' or 'quit' to end session"
+    echo "─────────────────────────────────────────────────────"
+    
+    ollama run "$model"
+}
+
+# List all models
+list_models() {
+    echo "🤖 LOCAL OLLAMA MODELS:"
+    echo "─────────────────────────────────────────────────────"
+    ollama list | awk 'NR>1 {printf "  %-25s %-10s %s\n", $1, $3, $4}'
+    
+    echo ""
+    echo "☁️  CLOUD MODELS (via SambaNova):"
+    echo "─────────────────────────────────────────────────────"
+    echo "  Meta-Llama-3.1-405B-Instruct    Large cloud model"
+    echo "  DeepSeek-R1                    Reasoning model"
+    
+    echo ""
+    echo "🔗 QUICK ALIASES:"
+    echo "─────────────────────────────────────────────────────"
+    for alias in ${(k)MODELS}; do
+        printf "  %-12s → %s\n" "$alias" "${MODELS[$alias]}"
+    done
+}
+
+# Test a model
+test_model() {
+    local model="$1"
+    
+    if [[ -z "$model" ]]; then
+        echo "Usage: pool test <model>"
+        echo "Example: pool test codex"
+        return 1
+    fi
+    
+    model="$(get_model $model)"
+    
+    echo "🧪 Testing model: $model"
+    echo "─────────────────────────────────────────────────────"
+    
+    local start_time=$(date +%s.%N)
+    
+    echo "Prompt: 'What is 2+2? Answer with just the number.'"
+    echo "Response:"
+    ollama run "$model" "What is 2+2? Answer with just the number." --nowordwrap
+    
+    local end_time=$(date +%s.%N)
+    local duration=$(echo "$end_time - $start_time" | bc 2>/dev/null || echo "N/A")
+    
+    echo ""
+    echo "⏱️  Response time: ${duration}s"
+}
+
+# Compare multiple models
+compare_mode() {
+    local prompt="$*"
+    
+    if [[ -z "$prompt" ]]; then
+        echo "Usage: pool compare <prompt>"
+        echo "Example: pool compare 'Explain dependency injection'"
+        return 1
+    fi
+    
+    local models_to_test=("qwen2.5-coder:7b" "phi4-mini:latest" "llama3.2:latest")
+    
+    echo "🔄 Comparing models with prompt:"
+    echo "\"$prompt\""
+    echo "═══════════════════════════════════════════════════════"
+    
+    for model in "${models_to_test[@]}"; do
+        echo ""
+        echo "┌────────────────────────────────────────────────────────┐"
+        echo "│ Model: $model"
+        echo "└────────────────────────────────────────────────────────┘"
+        
+        local start_time=$(date +%s)
+        ollama run "$model" "$prompt" --nowordwrap 2>/dev/null || echo "[Model not available]"
+        local end_time=$(date +%s)
+        
+        echo ""
+        echo "⏱️  Time: $((end_time - start_time))s"
+        echo "────────────────────────────────────────────────────────"
+    done
+}
+
+# Main command dispatcher
+case "${1:-help}" in
+    codex|code)
+        shift
+        codex_mode "$@"
+        ;;
+    copilot|pair)
+        shift
+        copilot_mode "$@"
+        ;;
+    droid|android|mobile)
+        shift
+        droid_mode "$@"
+        ;;
+    cloud|samba)
+        shift
+        cloud_mode "$@"
+        ;;
+    embed|embedding)
+        shift
+        embed_mode "$@"
+        ;;
+    chat|talk)
+        shift
+        chat_mode "$@"
+        ;;
+    list|ls)
+        list_models
+        ;;
+    test|check)
+        shift
+        test_model "$@"
+        ;;
+    compare|comp)
+        shift
+        compare_mode "$@"
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        # If first arg is a model alias, use codex mode with that model
+        if [[ -n "${MODELS[$1]}" ]]; then
+            codex_mode "$@"
+        else
+            # Default to codex mode with default model
+            codex_mode "$@"
+        fi
+        ;;
+esac

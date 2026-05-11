@@ -1,0 +1,204 @@
+{
+  "models": {
+    "codex-local": {
+      "title": "Codex (Local Ollama)",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "qwen-coder": {
+      "title": "Qwen Coder 7B",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "deepseek-local": {
+      "title": "DeepSeek V4 Pro",
+      "provider": "ollama",
+      "model": "deepseek-v4-pro:cloud",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "qwen-local": {
+      "title": "Qwen 2.5 7B",
+      "provider": "ollama",
+      "model": "qwen2.5:7b",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "qwen-pro": {
+      "title": "Qwen 3.5",
+      "provider": "ollama",
+      "model": "qwen3.5:latest",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "phi-fast": {
+      "title": "Phi-4 Mini (Fast)",
+      "provider": "ollama",
+      "model": "phi4-mini:latest",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "llama-fast": {
+      "title": "Llama 3.2",
+      "provider": "ollama",
+      "model": "llama3.2:latest",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "gemma-local": {
+      "title": "Gemma 4",
+      "provider": "ollama",
+      "model": "gemma4:latest",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "hermes-local": {
+      "title": "Hermes 3",
+      "provider": "ollama",
+      "model": "hermes3:latest",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "nous-hermes": {
+      "title": "Nous Hermes 2",
+      "provider": "ollama",
+      "model": "nous-hermes2:latest",
+      "apiBase": "http://localhost:11434",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    },
+    "sambanova": {
+      "title": "SambaNova (Cloud)",
+      "provider": "openai",
+      "model": "Meta-Llama-3.1-405B-Instruct",
+      "apiKey": "sk-srkbdzxsrncgo8q7t5eb1wmtwzt7g3s8x335rg485ucc5epk",
+      "apiBase": "https://api.sambanova.ai/v1",
+      "capabilities": {
+        "vision": false,
+        "chat": true,
+        "completion": true
+      }
+    }
+  },
+  "defaultModel": "codex-local",
+  "availableModels": [
+    {
+      "name": "qwen2.5-coder:7b",
+      "description": "Qwen 2.5 Coder 7B - Best for code generation",
+      "contextLength": 32768
+    },
+    {
+      "name": "qwen2.5:7b",
+      "description": "Qwen 2.5 7B - General purpose",
+      "contextLength": 32768
+    },
+    {
+      "name": "qwen3.5:latest",
+      "description": "Qwen 3.5 - Latest generation",
+      "contextLength": 128000
+    },
+    {
+      "name": "deepseek-v4-pro:cloud",
+      "description": "DeepSeek V4 Pro - Reasoning model",
+      "contextLength": 64000
+    },
+    {
+      "name": "phi4-mini:latest",
+      "description": "Phi-4 Mini - Fast responses",
+      "contextLength": 128000
+    },
+    {
+      "name": "llama3.2:latest",
+      "description": "Llama 3.2 - Lightweight",
+      "contextLength": 128000
+    },
+    {
+      "name": "gemma4:latest",
+      "description": "Gemma 4 - Latest generation",
+      "contextLength": 128000
+    },
+    {
+      "name": "hermes3:latest",
+      "description": "Hermes 3 - General purpose",
+      "contextLength": 128000
+    },
+    {
+      "name": "nous-hermes2:latest",
+      "description": "Nous Hermes 2 - Advanced reasoning",
+      "contextLength": 32000
+    },
+    {
+      "name": "nomic-embed-text:latest",
+      "description": "Nomic Embed - For embeddings",
+      "contextLength": 8192
+    },
+    {
+      "name": "tinyllama:latest",
+      "description": "TinyLlama - Testing only",
+      "contextLength": 2048
+    }
+  ],
+  "contextProviders": [
+    {
+      "name": "ollama",
+      "params": {
+        "apiBase": "http://localhost:11434"
+      }
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Tab Autocomplete",
+    "provider": "ollama",
+    "model": "qwen2.5-coder:7b",
+    "apiBase": "http://localhost:11434"
+  },
+  "disableIndexing": false,
+  "docs": [],
+  "ui": {
+    "showSuggestions": true,
+    "showRerankerLogs": false
+  }
+}

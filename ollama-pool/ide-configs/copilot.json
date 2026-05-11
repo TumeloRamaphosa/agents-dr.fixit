@@ -1,0 +1,44 @@
+{
+  "copilot.advanced": {
+    "authProvider": "github",
+    "debug.overrideEngine": "copilot-codex",
+    "debug.useLocalProxy": true,
+    "localProxy": {
+      "enabled": true,
+      "url": "http://localhost:8000/v1",
+      "apiKey": "sk-studex-local-123"
+    }
+  },
+  "github.copilot.advanced": {
+    "debug.testModelProxy": {
+      "url": "http://localhost:8000/v1",
+      "authHeaders": {
+        "Authorization": "Bearer sk-studex-local-123"
+      }
+    }
+  },
+  "customModels": [
+    {
+      "name": "ollama-qwen-coder",
+      "displayName": "Qwen Coder (Ollama)",
+      "endpoint": "http://localhost:11434/v1",
+      "model": "qwen2.5-coder:7b",
+      "provider": "openai"
+    },
+    {
+      "name": "ollama-deepseek",
+      "displayName": "DeepSeek Pro (Ollama)",
+      "endpoint": "http://localhost:11434/v1",
+      "model": "deepseek-v4-pro:cloud",
+      "provider": "openai"
+    },
+    {
+      "name": "litellm-proxy",
+      "displayName": "Studex Pool (All Models)",
+      "endpoint": "http://localhost:8000/v1",
+      "apiKey": "sk-studex-local-123",
+      "model": "codex-local",
+      "provider": "openai"
+    }
+  ]
+}

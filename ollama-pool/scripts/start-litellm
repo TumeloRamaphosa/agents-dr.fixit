@@ -1,0 +1,66 @@
+#!/bin/zsh
+# Start LiteLLM Proxy for Studex Multi-AI Router
+
+LITELLM_CONFIG="$HOME/.config/litellm/config.yaml"
+SAMBANOVA_KEY="sk-srkbdzxsrncgo8q7t5eb1wmtwzt7g3s8x335rg485ucc5epk"
+
+echo "🚀 Starting Studex LiteLLM Proxy..."
+echo "═══════════════════════════════════════════════════════"
+
+# Check if already running
+if curl -s http://localhost:8000/health 2>/dev/null | grep -q "healthy"; then
+    echo "✅ LiteLLM proxy already running on http://localhost:8000"
+    exit 0
+fi
+
+# Check Ollama
+if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+    echo "⚠️  Ollama not responding on localhost:11434"
+    echo "   Checking alternatives..."
+    
+    # Try Windows PC
+    if curl -s http://192.168.1.114:11434/api/tags >/dev/null 2>&1; then
+        echo "✅ Found Ollama on Windows PC (192.168.1.114:11434)"
+        export OLLAMA_HOST="http://192.168.1.114:11434"
+        # Update config temporarily
+        sed -i '' 's/localhost:11434/192.168.1.114:11434/g' "$LITELLM_CONFIG" 2>/dev/null || true
+    else
+        echo "❌ Ollama not available. Continuing with cloud-only mode..."
+    fi
+else
+    echo "✅ Ollama available at localhost:11434"
+fi
+
+# Export API keys
+export SAMBANOVA_API_KEY="$SAMBANOVA_KEY"
+
+# Start LiteLLM
+echo ""
+echo "Starting LiteLLM proxy..."
+echo "Config: $LITELLM_CONFIG"
+echo "Port: 8000"
+echo ""
+
+litellm --config "$LITELLM_CONFIG" --port 8000 --detailed_debug 2>&1 &
+
+# Wait for startup
+sleep 2
+
+# Verify
+if curl -s http://localhost:8000/health 2>/dev/null | grep -q "healthy"; then
+    echo "✅ LiteLLM proxy started successfully!"
+    echo "   API Docs: http://localhost:8000"
+    echo "   Test: curl http://localhost:8000/models"
+else
+    echo "⚠️  LiteLLM may still be starting..."
+    echo "   Check logs: lsof -i :8000"
+fi
+
+echo ""
+echo "Available endpoints:"
+echo "  /v1/chat/completions  → Chat with any model"
+echo "  /v1/completions       → Text completion"
+echo "  /v1/embeddings        → Text embeddings"
+echo "  /v1/models            → List available models"
+echo ""
+echo "To stop: kill $(pgrep -f 'litellm --config')"
