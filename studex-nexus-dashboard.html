@@ -681,6 +681,8 @@
             <li><a href="#ollama" onclick="showPage('ollama')">Ollama Models</a></li>
             <li><a href="#mesh" onclick="showPage('mesh')">LLM Mesh</a></li>
             <li><a href="#integrations" onclick="showPage('integrations')">Integrations</a></li>
+            <li><a href="#composio" onclick="showPage('composio')">Composio Hub</a></li>
+            <li><a href="#agents" onclick="showPage('agents')">Agents</a></li>
             <li><a href="#network" onclick="showPage('network')">Network</a></li>
         </ul>
     </nav>
@@ -1012,6 +1014,82 @@
         <p class="section-subtitle">Composio Connections & External Services</p>
         
         <div class="integrations-grid">
+            <!-- COMPOSIO PLATFORMS -->
+            <div class="integration-card" style="grid-column: span 3; border: 2px solid var(--gold); background: rgba(201, 168, 76, 0.1);">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: var(--gold);">📊 COMPOSIO - DATA LAYER</span>
+                    <span class="integration-status connected">API Active</span>
+                </div>
+                <div class="integration-details" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="integration-detail"><span>API Key</span><span>ak_cK-d0Y9yF***</span></div>
+                    <div class="integration-detail"><span>Available Actions</span><span>200+</span></div>
+                    <div class="integration-detail"><span>Token Refresh</span><span style="color: #2ECC71;">Auto ✓</span></div>
+                    <div class="integration-detail"><span>Data Reading</span><span style="color: #2ECC71;">Active</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: #1877F2;">Facebook</span>
+                    <span class="integration-status connected">ACTIVE ✓</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Page</span><span>Studex Meat</span></div>
+                    <div class="integration-detail"><span>Page ID</span><span>56066655</span></div>
+                    <div class="integration-detail"><span>Actions</span><span>38 available</span></div>
+                    <div class="integration-detail"><span>Post</span><span style="color: var(--gold);">Test →</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: #E4405F;">Instagram</span>
+                    <span class="integration-status disconnected">EXPIRED</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Status</span><span style="color: #E74C3C;">Reconnect needed</span></div>
+                    <div class="integration-detail"><span>Actions</span><span>20+ available</span></div>
+                    <div class="integration-detail"><span>Link</span><span>dashboard.composio.dev</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: #96BF48;">Shopify</span>
+                    <span class="integration-status disconnected">EXPIRED</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Store</span><span>studexmeat.com</span></div>
+                    <div class="integration-detail"><span>Actions</span><span>26 available</span></div>
+                    <div class="integration-detail"><span>Reconnect</span><span style="color: var(--gold);">→</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: #4285F4;">Google Ads</span>
+                    <span class="integration-status disconnected">EXPIRED</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Ad Account</span><span>560666565541381</span></div>
+                    <div class="integration-detail"><span>Actions</span><span>15 available</span></div>
+                    <div class="integration-detail"><span>Reconnect</span><span style="color: var(--gold);">→</span></div>
+                </div>
+            </div>
+            
+            <!-- CALLPAY / ONEGATE -->
+            <div class="integration-card" style="grid-column: span 2; border: 2px solid #2ECC71;">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: #2ECC71;">💳 CallPay / OneGate</span>
+                    <span class="integration-status connected">UAT Ready</span>
+                </div>
+                <div class="integration-details" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="integration-detail"><span>Account 1</span><span>UAT - Required Services</span></div>
+                    <div class="integration-detail"><span>Account 2</span><span>UAT - Recurring Payments</span></div>
+                    <div class="integration-detail"><span>Integration</span><span style="color: var(--gold);">REST API →</span></div>
+                </div>
+            </div>
+            
             <div class="integration-card">
                 <div class="integration-header">
                     <span class="integration-name">GitHub</span>
@@ -1548,5 +1626,212 @@
             initParticleSystem();
         });
     </script>
+    
+    <!-- AGENTS SECTION -->
+    <section id="agents" class="page">
+        <h2 class="section-title">🤖 AI Agents</h2>
+        <p class="section-subtitle">Autonomous agents managing your platforms</p>
+        
+        <div class="integrations-grid">
+            <div class="integration-card" style="border: 2px solid var(--gold);">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: var(--gold);">Naledi</span>
+                    <span class="integration-status connected">ACTIVE</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Role</span><span>CMO / WhatsApp</span></div>
+                    <div class="integration-detail"><span>Platforms</span><span>WhatsApp, Email</span></div>
+                    <div class="integration-detail"><span>Status</span><span style="color: #2ECC71;">Running</span></div>
+                    <div class="integration-detail"><span>Messages Today</span><span>24</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Charlie</span>
+                    <span class="integration-status connected">READY</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Role</span><span>Voice Agent</span></div>
+                    <div class="integration-detail"><span>Provider</span><span>ElevenLabs + Twilio</span></div>
+                    <div class="integration-detail"><span>Status</span><span>Idle</span></div>
+                    <div class="integration-detail"><span>Call Number</span><span>+12563986827</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">EDDIE</span>
+                    <span class="integration-status connected">ACTIVE</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Role</span><span>Ad Engine</span></div>
+                    <div class="integration-detail"><span>Platforms</span><span>Google Ads, FB Ads</span></div>
+                    <div class="integration-detail"><span>Pipeline</span><span>5-stage</span></div>
+                    <div class="integration-detail"><span>Status</span><span>Optimizing</span></div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">RALF</span>
+                    <span class="integration-status connected">ACTIVE</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Role</span><span>Loop Coordinator</span></div>
+                    <div class="integration-detail"><span>Schedule</span><span>Midnight SAST</span></div>
+                    <div class="integration-detail"><span>Last Run</span><span>Today 00:00</span></div>
+                    <div class="integration-detail"><span>Status</span><span>Waiting</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- COMPOSIO HUB SECTION -->
+    <section id="composio" class="page">
+        <h2 class="section-title">⚡ Composio Hub</h2>
+        <p class="section-subtitle">Connect platforms, automate actions, manage data</p>
+        
+        <!-- Connection Status -->
+        <div class="status-bar" style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(201, 168, 76, 0.1); border: 1px solid var(--gold);">
+            <h3 style="color: var(--gold); margin-bottom: 1rem;">● Active Connections (2/7)</h3>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                <div style="text-align: center; padding: 1rem; background: rgba(46, 204, 113, 0.2); border-radius: 8px;">
+                    <div style="font-size: 2rem;">📘</div>
+                    <div style="color: #2ECC71; font-weight: bold;">Facebook</div>
+                    <div style="font-size: 0.8rem;">ACTIVE ✓</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(231, 76, 60, 0.2); border-radius: 8px;">
+                    <div style="font-size: 2rem;">📸</div>
+                    <div style="color: #E74C3C; font-weight: bold;">Instagram</div>
+                    <div style="font-size: 0.8rem;">EXPIRED</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(231, 76, 60, 0.2); border-radius: 8px;">
+                    <div style="font-size: 2rem;">🛒</div>
+                    <div style="color: #E74C3C; font-weight: bold;">Shopify</div>
+                    <div style="font-size: 0.8rem;">EXPIRED</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(231, 76, 60, 0.2); border-radius: 8px;">
+                    <div style="font-size: 2rem;">📊</div>
+                    <div style="color: #E74C3C; font-weight: bold;">Google Ads</div>
+                    <div style="font-size: 0.8rem;">EXPIRED</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Platform Actions -->
+        <h3 style="color: var(--gold); margin-bottom: 1rem;">Platform Capabilities</h3>
+        
+        <!-- Facebook Actions -->
+        <div class="platform-section" style="margin-bottom: 2rem; border: 1px solid #1877F2; border-radius: 12px; overflow: hidden;">
+            <div style="background: #1877F2; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; font-size: 1.2rem;">📘 Facebook - 40 Actions</span>
+                <button onclick="window.open('https://dashboard.composio.dev/connections', '_blank')" style="background: white; color: #1877F2; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Reconnect →</button>
+            </div>
+            <div style="padding: 1rem; background: rgba(24, 119, 242, 0.1);">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                    <span class="action-tag">create_post</span>
+                    <span class="action-tag">create_photo_post</span>
+                    <span class="action-tag">create_video_post</span>
+                    <span class="action-tag">get_page_posts</span>
+                    <span class="action-tag">get_page_insights</span>
+                    <span class="action-tag">get_post_insights</span>
+                    <span class="action-tag">create_comment</span>
+                    <span class="action-tag">get_comments</span>
+                    <span class="action-tag">send_message</span>
+                    <span class="action-tag">get_conversations</span>
+                    <span class="action-tag">delete_post</span>
+                    <span class="action-tag">update_post</span>
+                    <span class="action-tag">like_post</span>
+                    <span class="action-tag">get_page_details</span>
+                    <span class="action-tag">get_scheduled_posts</span>
+                    <span class="action-tag">upload_photo</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instagram Actions -->
+        <div class="platform-section" style="margin-bottom: 2rem; border: 1px solid #E4405F; border-radius: 12px; overflow: hidden;">
+            <div style="background: #E4405F; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; font-size: 1.2rem;">📸 Instagram - 16 Actions</span>
+                <button onclick="window.open('https://dashboard.composio.dev/connections', '_blank')" style="background: white; color: #E4405F; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Connect →</button>
+            </div>
+            <div style="padding: 1rem; background: rgba(228, 64, 95, 0.1);">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                    <span class="action-tag">create_post</span>
+                    <span class="action-tag">create_carousel</span>
+                    <span class="action-tag">get_user_media</span>
+                    <span class="action-tag">get_post_insights</span>
+                    <span class="action-tag">send_text_message</span>
+                    <span class="action-tag">list_conversations</span>
+                    <span class="action-tag">get_post_comments</span>
+                    <span class="action-tag">reply_to_comment</span>
+                    <span class="action-tag">get_user_info</span>
+                    <span class="action-tag">get_user_insights</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shopify Actions -->
+        <div class="platform-section" style="margin-bottom: 2rem; border: 1px solid #96BF48; border-radius: 12px; overflow: hidden;">
+            <div style="background: #96BF48; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; font-size: 1.2rem;">🛒 Shopify - 28 Actions</span>
+                <button onclick="window.open('https://dashboard.composio.dev/connections', '_blank')" style="background: white; color: #96BF48; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Connect →</button>
+            </div>
+            <div style="padding: 1rem; background: rgba(150, 191, 72, 0.1);">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                    <span class="action-tag">create_product</span>
+                    <span class="action-tag">get_products</span>
+                    <span class="action-tag">delete_product</span>
+                    <span class="action-tag">create_order</span>
+                    <span class="action-tag">get_order_list</span>
+                    <span class="action-tag">update_order</span>
+                    <span class="action-tag">create_customer</span>
+                    <span class="action-tag">get_all_customers</span>
+                    <span class="action-tag">get_customer_orders</span>
+                    <span class="action-tag">get_shop_details</span>
+                    <span class="action-tag">create_collection</span>
+                    <span class="action-tag">add_to_collection</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Google Ads Actions -->
+        <div class="platform-section" style="margin-bottom: 2rem; border: 1px solid #4285F4; border-radius: 12px; overflow: hidden;">
+            <div style="background: #4285F4; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; font-size: 1.2rem;">📊 Google Ads - 5 Actions</span>
+                <button onclick="window.open('https://dashboard.composio.dev/connections', '_blank')" style="background: white; color: #4285F4; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold;">Connect →</button>
+            </div>
+            <div style="padding: 1rem; background: rgba(66, 133, 244, 0.1);">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                    <span class="action-tag">get_campaign_by_id</span>
+                    <span class="action-tag">get_campaign_by_name</span>
+                    <span class="action-tag">create_customer_list</span>
+                    <span class="action-tag">get_customer_lists</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions Panel -->
+        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(10, 10, 10, 0.8); border: 1px solid var(--gold); border-radius: 12px;">
+            <h3 style="color: var(--gold); margin-bottom: 1rem;">⚡ Quick Actions</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <button onclick="alert('Running: Facebook create_post...')" style="padding: 1rem; background: #1877F2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📘 Test Facebook Post</button>
+                <button onclick="alert('Running: Get Facebook Insights...')" style="padding: 1rem; background: #1877F2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📊 Get FB Insights</button>
+                <button onclick="window.open('https://dashboard.composio.dev/connections', '_blank')" style="padding: 1rem; background: var(--gold); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🔗 Manage Connections</button>
+            </div>
+        </div>
+        
+        <style>
+        .action-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #ccc;
+            font-family: 'Space Mono', monospace;
+        }
+        </style>
+    </section>
 </body>
 </html>
