@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studex Nexus Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --obsidian: #0A0A0A;
+            --obsidian-light: #151515;
+            --obsidian-lighter: #1F1F1F;
+            --gold: #C9A84C;
+            --gold-dim: #9A7B3A;
+            --gold-bright: #E5C96B;
+            --text-primary: #F5F5F5;
+            --text-secondary: #A0A0A0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: var(--obsidian);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(180deg, var(--obsidian) 0%, rgba(10,10,10,0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--gold);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        #hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            color: var(--gold);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            text-shadow: 0 0 40px rgba(201, 168, 76, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 40px rgba(201, 168, 76, 0.5); }
+            to { text-shadow: 0 0 60px rgba(201, 168, 76, 0.8), 0 0 80px rgba(201, 168, 76, 0.4); }
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            letter-spacing: 4px;
+            font-weight: 300;
+        }
+
+        .hero-stat {
+            display: inline-block;
+            margin: 2rem 1rem;
+            padding: 1.5rem 2.5rem;
+            background: rgba(201, 168, 76, 0.1);
+            border: 1px solid rgba(201, 168, 76, 0.3);
+            border-radius: 4px;
+        }
+
+        .hero-stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-indicator span {
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-bottom: 2px solid var(--gold);
+            border-right: 2px solid var(--gold);
+            transform: rotate(45deg);
+            margin: 0 auto;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* Section Styles */
+        section {
+            padding: 6rem 2rem 4rem;
+            min-height: 100vh;
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            color: var(--gold);
+            letter-spacing: 4px;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-card {
+            background: var(--obsidian-light);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: 0 10px 40px rgba(201, 168, 76, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+
+        /* NAS Dashboard */
+        .nas-path {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            background: var(--obsidian);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+
+        .storage-bar {
+            height: 30px;
+            background: var(--obsidian);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .storage-used {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+            border-radius: 15px;
+            width: 10.26%;
+            transition: width 1s ease;
+        }
+
+        .storage-info {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .storage-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .storage-detail:last-child {
+            border-bottom: none;
+        }
+
+        .storage-label {
+            color: var(--text-secondary);
+        }
+
+        .storage-value {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* Ollama Models Grid */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .model-card {
+            background: var(--obsidian-light);
+            border: 1px solid rgba(201, 168, 76, 0.15);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .model-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(201, 168, 76, 0.15);
+        }
+
+        .model-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-size {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .model-status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: rgba(201, 168, 76, 0.15);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .model-meta {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* LLM Mesh */
+        .mesh-nodes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .node-card {
+            background: var(--obsidian-light);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node-card::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px #4CAF50; }
+            50% { opacity: 0.7; box-shadow: 0 0 20px #4CAF50; }
+        }
+
+        .node-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .node-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-type {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .node-details {
+            display: grid;
+            gap: 0.8rem;
+        }
+
+        .node-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .node-detail-label {
+            color: var(--text-secondary);
+        }
+
+        .node-detail-value {
+            color: var(--text-primary);
+        }
+
+        /* Integrations */
+        .integrations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .integration-card {
+            background: var(--obsidian-light);
+            border: 1px solid rgba(201, 168, 76, 0.15);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .integration-card:hover {
+            border-color: var(--gold);
+        }
+
+        .integration-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .integration-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            color: var(--gold);
+            letter-spacing: 1px;
+        }
+
+        .integration-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .integration-status.connected {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+
+        .integration-status.disconnected {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+        }
+
+        .integration-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .integration-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+        }
+
+        /* Network/Tailscale */
+        .vpn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .vpn-card {
+            background: var(--obsidian-light);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .vpn-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+        }
+
+        .vpn-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            color: var(--obsidian);
+        }
+
+        .vpn-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        .vpn-status {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .vpn-status-dot {
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        .vpn-status-text {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .vpn-info {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .vpn-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            background: var(--obsidian);
+            border-radius: 6px;
+        }
+
+        .vpn-info-label {
+            color: var(--text-secondary);
+        }
+
+        .vpn-info-value {
+            color: var(--gold);
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--obsidian-light);
+            border-top: 1px solid rgba(201, 168, 76, 0.2);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .footer-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+        }
+
+        /* Page visibility */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-logo">Studex Nexus</div>
+        <ul class="nav-links">
+            <li><a href="#hero" class="active" onclick="showPage('hero')">Home</a></li>
+            <li><a href="#nas" onclick="showPage('nas')">NAS Drive</a></li>
+            <li><a href="#ollama" onclick="showPage('ollama')">Ollama Models</a></li>
+            <li><a href="#mesh" onclick="showPage('mesh')">LLM Mesh</a></li>
+            <li><a href="#integrations" onclick="showPage('integrations')">Integrations</a></li>
+            <li><a href="#network" onclick="showPage('network')">Network</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="page active">
+        <div id="canvas-container"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Studex Nexus</h1>
+            <p class="hero-subtitle">Your AI Infrastructure Command Center</p>
+            
+            <div class="hero-stats" style="margin-top: 3rem;">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">4</div>
+                    <div class="hero-stat-label">Active Nodes</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">5TB</div>
+                    <div class="hero-stat-label">Storage</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">8</div>
+                    <div class="hero-stat-label">Models</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">100%</div>
+                    <div class="hero-stat-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span></span>
+        </div>
+    </section>
+
+    <!-- NAS Dashboard -->
+    <section id="nas" class="page">
+        <h2 class="section-title">NAS Drive</h2>
+        <p class="section-subtitle">Storage Management & Monitoring</p>
+        
+        <div class="dashboard-grid">
+            <div class="dashboard-card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <span class="card-title">Primary Storage</span>
+                    <span class="card-icon">💾</span>
+                </div>
+                
+                <div class="nas-path">/Volumes/Untitled 2</div>
+                
+                <div class="storage-bar">
+                    <div class="storage-used"></div>
+                </div>
+                
+                <div class="storage-info">
+                    <span>10.26% Used</span>
+                    <span>89.74% Free</span>
+                </div>
+                
+                <div class="storage-detail">
+                    <span class="storage-label">Total Capacity</span>
+                    <span class="storage-value">5 TB</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Used Space</span>
+                    <span class="storage-value">513 GB</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Free Space</span>
+                    <span class="storage-value">4.5 TB</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">File System</span>
+                    <span class="storage-value">APFS</span>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">Quick Stats</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Total Files</span>
+                    <span class="storage-value">12,847</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Folders</span>
+                    <span class="storage-value">1,234</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Last Backup</span>
+                    <span class="storage-value">Today</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Health</span>
+                    <span class="storage-value" style="color: #4CAF50;">Excellent</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ollama Models -->
+    <section id="ollama" class="page">
+        <h2 class="section-title">Ollama Models</h2>
+        <p class="section-subtitle">Installed & Available AI Models</p>
+        
+        <div class="models-grid">
+            <div class="model-card">
+                <div class="model-name">llama3.2</div>
+                <div class="model-size">2.0 GB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>Latest</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">mistral</div>
+                <div class="model-size">4.1 GB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>v0.3</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">codellama</div>
+                <div class="model-size">3.8 GB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>v0.4</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">phi3</div>
+                <div class="model-size">2.3 GB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>Mini</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">deepseek-coder</div>
+                <div class="model-size">3.6 GB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>v2</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">qwen2.5</div>
+                <div class="model-size">4.7 GB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>Coder</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">nomic-embed</div>
+                <div class="model-size">274 MB</div>
+                <span class="model-status">Installed</span>
+                <div class="model-meta">
+                    <span>Text</span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="model-card">
+                <div class="model-name">llama3.2:70b</div>
+                <div class="model-size">39 GB</div>
+                <span class="model-status">Available</span>
+                <div class="model-meta">
+                    <span>Large</span>
+                    <span>Not Installed</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LLM Mesh -->
+    <section id="mesh" class="page">
+        <h2 class="section-title">LLM Mesh</h2>
+        <p class="section-subtitle">Connected Machines & Compute Nodes</p>
+        
+        <div class="mesh-nodes">
+            <div class="node-card">
+                <div class="node-icon">🍎</div>
+                <div class="node-name">Mac Mini</div>
+                <div class="node-type">Primary Node - macOS</div>
+                <div class="node-details">
+                    <div class="node-detail">
+                        <span class="node-detail-label">Status</span>
+                        <span class="node-detail-value" style="color: #4CAF50;">Online</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">IP Address</span>
+                        <span class="node-detail-value">192.168.1.100</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">CPU</span>
+                        <span class="node-detail-value">M2 Pro • 12 Core</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Memory</span>
+                        <span class="node-detail-value">16 GB</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Ollama</span>
+                        <span class="node-detail-value">Running</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Uptime</span>
+                        <span class="node-detail-value">14 days</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="node-card">
+                <div class="node-icon">🪟</div>
+                <div class="node-name">Windows PC</div>
+                <div class="node-type">Secondary Node - Windows</div>
+                <div class="node-details">
+                    <div class="node-detail">
+                        <span class="node-detail-label">Status</span>
+                        <span class="node-detail-value" style="color: #4CAF50;">Online</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">IP Address</span>
+                        <span class="node-detail-value">192.168.1.114</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">CPU</span>
+                        <span class="node-detail-value">AMD Ryzen 7 5800X</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Memory</span>
+                        <span class="node-detail-value">32 GB</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">GPU</span>
+                        <span class="node-detail-value">NVIDIA RTX 3080</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Uptime</span>
+                        <span class="node-detail-value">3 days</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="node-card">
+                <div class="node-icon">🐧</div>
+                <div class="node-name">Linux Server</div>
+                <div class="node-type">Compute Node - Ubuntu</div>
+                <div class="node-details">
+                    <div class="node-detail">
+                        <span class="node-detail-label">Status</span>
+                        <span class="node-detail-value" style="color: #4CAF50;">Online</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">IP Address</span>
+                        <span class="node-detail-value">192.168.1.150</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">CPU</span>
+                        <span class="node-detail-value">Intel Xeon E-2388G</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Memory</span>
+                        <span class="node-detail-value">64 GB</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Storage</span>
+                        <span class="node-detail-value">8 TB NVMe</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Uptime</span>
+                        <span class="node-detail-value">30 days</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="node-card">
+                <div class="node-icon">📱</div>
+                <div class="node-name">iPad Pro</div>
+                <div class="node-type">Mobile Edge - iPadOS</div>
+                <div class="node-details">
+                    <div class="node-detail">
+                        <span class="node-detail-label">Status</span>
+                        <span class="node-detail-value" style="color: #FFC107;">Standby</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">IP Address</span>
+                        <span class="node-detail-value">192.168.1.185</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Chip</span>
+                        <span class="node-detail-value">M2</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Memory</span>
+                        <span class="node-detail-value">8 GB</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Last Seen</span>
+                        <span class="node-detail-value">2 hours ago</span>
+                    </div>
+                    <div class="node-detail">
+                        <span class="node-detail-label">Role</span>
+                        <span class="node-detail-value">Edge Inference</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations -->
+    <section id="integrations" class="page">
+        <h2 class="section-title">Integrations</h2>
+        <p class="section-subtitle">Composio Connections & External Services</p>
+        
+        <div class="integrations-grid">
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">GitHub</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Account</span>
+                        <span>@studex-ai</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Repositories</span>
+                        <span>24</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Webhooks</span>
+                        <span>8 Active</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Last Sync</span>
+                        <span>5 min ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Slack</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Workspace</span>
+                        <span>Studex Nexus</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Channels</span>
+                        <span>12</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Bot Status</span>
+                        <span>Active</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Last Activity</span>
+                        <span>1 hour ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">OpenWeather</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>API Key</span>
+                        <span>Active</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Location</span>
+                        <span>San Francisco</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Calls Today</span>
+                        <span>1,247</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Quota</span>
+                        <span>82% used</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Notion</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Workspace</span>
+                        <span>Studex Team</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Pages</span>
+                        <span>156</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Databases</span>
+                        <span>8</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Sync Status</span>
+                        <span>Up to date</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">AWS S3</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Bucket</span>
+                        <span>studex-backups</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Region</span>
+                        <span>us-west-2</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Objects</span>
+                        <span>45,892</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Storage Used</span>
+                        <span>1.2 TB</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Cloudflare</span>
+                    <span class="integration-status disconnected">Disconnected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Domain</span>
+                        <span>studex.io</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Status</span>
+                        <span>API Key Missing</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>DNS Records</span>
+                        <span>--</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Action</span>
+                        <span style="color: var(--gold);">Reconnect</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Supabase</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Project</span>
+                        <span>studex-nexus</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Region</span>
+                        <span>us-east-1</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Database Size</span>
+                        <span>245 MB</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>API Calls</span>
+                        <span>12.4K/day</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Twilio</span>
+                    <span class="integration-status connected">Connected</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail">
+                        <span>Account SID</span>
+                        <span>AC***8f3a</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Phone Numbers</span>
+                        <span>3</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>SMS This Month</span>
+                        <span>847</span>
+                    </div>
+                    <div class="integration-detail">
+                        <span>Credits</span>
+                        <span>$42.50</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Network / Tailscale -->
+    <section id="network" class="page">
+        <h2 class="section-title">Network & VPN</h2>
+        <p class="section-subtitle">Tailscale VPN Configuration & Status</p>
+        
+        <div class="vpn-grid">
+            <div class="vpn-card">
+                <div class="vpn-header">
+                    <div class="vpn-logo">T</div>
+                    <div>
+                        <div class="vpn-title">Tailscale</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Zero-config VPN</div>
+                    </div>
+                </div>
+                
+                <div class="vpn-status">
+                    <div class="vpn-status-dot"></div>
+                    <span class="vpn-status-text">Connected</span>
+                </div>
+                
+                <div class="vpn-info">
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Tailscale IP</span>
+                        <span class="vpn-info-value">100.64.42.189</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Subnet Router</span>
+                        <span class="vpn-info-value">Enabled</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Exit Node</span>
+                        <span class="vpn-info-value">Disabled</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">SSH Access</span>
+                        <span class="vpn-info-value">Enabled</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">MagicDNS</span>
+                        <span class="vpn-info-value">Enabled</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Client Version</span>
+                        <span class="vpn-info-value">1.72.1</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Uptime</span>
+                        <span class="vpn-info-value">14 days</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="vpn-card">
+                <div class="vpn-header">
+                    <div class="vpn-logo" style="background: linear-gradient(135deg, #2ECC71, #27AE60);">H</div>
+                    <div>
+                        <div class="vpn-title">Home Network</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Local Network Status</div>
+                    </div>
+                </div>
+                
+                <div class="vpn-status">
+                    <div class="vpn-status-dot" style="background: #2ECC71; box-shadow: 0 0 15px #2ECC71;"></div>
+                    <span class="vpn-status-text">All Systems Online</span>
+                </div>
+                
+                <div class="vpn-info">
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Gateway</span>
+                        <span class="vpn-info-value">192.168.1.1</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Subnet Mask</span>
+                        <span class="vpn-info-value">255.255.255.0</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">DHCP Range</span>
+                        <span class="vpn-info-value">192.168.1.100-200</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Active Devices</span>
+                        <span class="vpn-info-value">12</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">WAN IP</span>
+                        <span class="vpn-info-value">97.118.45.201</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">ISP</span>
+                        <span class="vpn-info-value">Comcast</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Download</span>
+                        <span class="vpn-info-value">250 Mbps</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- NAS File Sharing Section -->
+            <div class="vpn-card" style="grid-column: span 2;">
+                <div class="vpn-header">
+                    <div class="vpn-logo" style="background: linear-gradient(135deg, #C9A84C, #9A7B3A);">N</div>
+                    <div>
+                        <div class="vpn-title">NAS File Sharing</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">SMB Network Drive - Access from Other Computers</div>
+                    </div>
+                </div>
+                
+                <div class="vpn-status">
+                    <div class="vpn-status-dot" style="background: #C9A84C; box-shadow: 0 0 15px #C9A84C;"></div>
+                    <span class="vpn-status-text">Ready to Share</span>
+                </div>
+                
+                <div class="vpn-info" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Server IP</span>
+                        <span class="vpn-info-value">192.168.1.110</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Share Name</span>
+                        <span class="vpn-info-value">Studex NAS</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Protocol</span>
+                        <span class="vpn-info-value">SMB/CIFS</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Drive Path</span>
+                        <span class="vpn-info-value">/Volumes/Untitled 2</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Total Space</span>
+                        <span class="vpn-info-value">5TB</span>
+                    </div>
+                    <div class="vpn-info-row">
+                        <span class="vpn-info-label">Used</span>
+                        <span class="vpn-info-value">513GB (10%)</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(201, 168, 76, 0.1); border-radius: 8px; border: 1px solid rgba(201, 168, 76, 0.3);">
+                    <div style="font-size: 0.85rem; color: var(--gold); font-weight: 600; margin-bottom: 0.5rem;">How to Connect from Other Computers</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.8;">
+                        <strong style="color: var(--gold);">Mac:</strong> Finder → Go → Connect to Server → <code style="background: #1F1F1F; padding: 2px 6px; border-radius: 4px;">smb://192.168.1.110/Studex NAS</code><br>
+                        <strong style="color: var(--gold);">Windows:</strong> File Explorer → <code style="background: #1F1F1F; padding: 2px 6px; border-radius: 4px;">\\192.168.1.110\Studex NAS</code><br>
+                        <strong style="color: var(--gold);">Linux:</strong> <code style="background: #1F1F1F; padding: 2px 6px; border-radius: 4px;">smbclient //192.168.1.110/Studex NAS</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid" style="margin-top: 2rem; max-width: 1200px;">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">Connected Peers</span>
+                    <span class="card-icon">🔗</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Mac Mini</span>
+                    <span class="storage-value">100.64.42.1</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Windows PC</span>
+                    <span class="storage-value">100.64.42.2</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Linux Server</span>
+                    <span class="storage-value">100.64.42.3</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">iPad Pro</span>
+                    <span class="storage-value">100.64.42.4</span>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="card-title">Port Forwarding</span>
+                    <span class="card-icon">🚪</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">Ollama (11434)</span>
+                    <span class="storage-value" style="color: #4CAF50;">Open</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">SSH (22)</span>
+                    <span class="storage-value" style="color: #4CAF50;">Open</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">HTTP (80)</span>
+                    <span class="storage-value" style="color: #4CAF50;">Open</span>
+                </div>
+                <div class="storage-detail">
+                    <span class="storage-label">HTTPS (443)</span>
+                    <span class="storage-value" style="color: #4CAF50;">Open</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">Studex Nexus</div>
+        <p>AI Infrastructure Dashboard • Built with Three.js</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem;">© 2026 Studex Nexus. All systems operational.</p>
+    </footer>
+
+    <script>
+        // Three.js Particle System
+        function initParticleSystem() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            
+            // Create particles
+            const particleCount = 2000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            
+            const goldColor = new THREE.Color(0xC9A84C);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                positions[i3] = (Math.random() - 0.5) * 20;
+                positions[i3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i3 + 2] = (Math.random() - 0.5) * 20;
+                
+                const mixRatio = Math.random() * 0.5 + 0.5;
+                colors[i3] = goldColor.r * mixRatio;
+                colors[i3 + 1] = goldColor.g * mixRatio;
+                colors[i3 + 2] = goldColor.b * mixRatio;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            
+            // Add connecting lines
+            const lineGeometry = new THREE.BufferGeometry();
+            const linePositions = new Float32Array(particleCount * 6);
+            lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+            
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: 0xC9A84C,
+                transparent: true,
+                opacity: 0.1
+            });
+            
+            const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+            scene.add(lines);
+            
+            camera.position.z = 8;
+            
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX - window.innerWidth / 2) * 0.001;
+                mouseY = (event.clientY - window.innerHeight / 2) * 0.001;
+            });
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particles.rotation.x += 0.0003;
+                particles.rotation.y += 0.0005;
+                
+                lines.rotation.x += 0.0003;
+                lines.rotation.y += 0.0005;
+                
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === '#' + pageId) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initParticleSystem();
+        });
+    </script>
+</body>
+</html>
