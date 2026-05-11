@@ -1,268 +1,90 @@
-# Agent Dr. Fixit 🤖💉
+# StudEx Valley OS
 
-**Automated Health Monitoring & Auto-Recovery for AI Agents**
+Hive Mind wrapper for Claude Code. Role-based agents run Tumelo's businesses (Studex Meat, SGM, Studex Coffee) on local Ollama by default, escalating to Claude only when needed, with daily voice rituals, an overnight Night Build that ships two prototypes per night, and the existing 2nd Brain Obsidian vault as the single source of truth.
 
-Continuous uptime for your local MLX inference servers with automatic restart, health checks, and comprehensive logging.
+## Architecture
 
-## Features
-
-- 🔄 **Auto-Restart**: Automatically restarts crashed agents within seconds
-- 💓 **Heartbeat Monitoring**: Checks all agents every hour (configurable)
-- 🏎️ **MLX Native**: Hermes 3 runs on Apple's MLX framework (faster than GGUF/Ollama)
-- 📝 **Comprehensive Logging**: All activity logged to `logs/` directory
-- 🚨 **Alert System**: Notifies when agents go down and come back up
-- 🎯 **Multi-Agent**: Support for unlimited agents in one config file
-- 🍎 **macOS Native**: Uses launchd (proper Mac service management)
+```
+Vault (2nd Brain) = brain · Hive Mind = wrapper · Agents = hands
+Slack + Discord + Voice = steering wheel · Ollama (+ optional mesh-llm) = muscle · Claude = escalation
+```
 
 ## Quick Start
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/TumeloRamaphosa/agents-dr.fixit.git
-cd agents-dr.fixit
-
-# 2. Run setup
-chmod +x install.sh
-./install.sh
+npm install
+cp .env.example .env   # fill in keys
+npm run doctor         # verify Ollama, keys, SQLite, vault, Cursor API
+npm run dashboard:dev  # :3141 — world clocks, kanban, mission control
 ```
 
-## What's Installed
+## Daily Rituals (SAST)
 
-### 1. Hermes 3 MLX Server (`agents/hermes-3-mlx/`)
-- **Model**: Hermes-3-Llama-3.1-8B-4bit (recommended for 32GB Macs)
-- **Backend**: macMLX (native Swift, fastest on Apple Silicon)
-- **Port**: 8000
-- **API**: OpenAI-compatible at `http://localhost:8000/v1`
+| Time | Ritual |
+|------|--------|
+| 08:00 | Robusca Standup |
+| 09:00 | StudEx Agent Council Meeting |
+| 22:00–02:00 | Night Build (2 products/night, local Ollama only) |
 
-### 2. Heartbeat Monitor (`scripts/agent-heartbeat.sh`)
-- Checks agent health every hour
-- Auto-restarts on failure
-- Health checks verify both process + HTTP endpoint
-- Logs everything to `logs/heartbeat.log`
+## Agent Roster
 
-### 3. LaunchD Service (Auto-scheduled)
-- Runs hourly via macOS launchd
-- Also runs on system boot
-- No cron needed (uses native Mac tech)
+| Role | Codename | Voice | Anchor |
+|------|----------|-------|--------|
+| Chief of Staff | Robusca | Female, warm SA-English | 08:00 standup + 09:00 Council |
+| Sales | CashClaw (Adam) | Male, confident | Studex Meat |
+| Customer | DenchClaw, Charlie | Friendly SA-English | Charlie = Studex Meat |
+| Research | Research, OpenFang | Curious | Owns Night Build problem picks |
+| DevOps | CTO, Skunk Works, Dr Fix-It | Engineer, brief | CTO uses Cursor |
+| Media | The Lady | Female, polished | Content + brand |
 
-## Configuration
+## Kill Switches
 
-### Add New Agents
+All toggled in `.env`. Key switches: `SCHEDULER_ENABLED`, `COUNCIL_ENABLED`, `NIGHT_BUILD_ENABLED`, `KILL_PHRASE`.
 
-Edit `config/agents.conf`:
+## Stack
 
-```
-# Format: agent_name|health_url|pid_file|type
+Node 20+ ESM · TypeScript 5.x · Hono · better-sqlite3 + sqlite-vec · ElevenLabs TTS · Groq Whisper STT · Slack Bolt · discord.js · node-cron + launchd · Cursor IDE+CLI+API
 
-# Hermes 3 MLX
-hermes-3-mlx|http://127.0.0.1:8000/v1/models|/tmp/hermes-3-mlx.pid|server
-
-# Example: Ollama
-ollama|http://127.0.0.1:11434/api/tags|/tmp/ollama.pid|server
-
-# Example: n8n
-n8n|http://127.0.0.1:5678/health|/tmp/n8n.pid|server
-
-# Example: ChromaDB
-chromadb|http://127.0.0.1:8000/api/v1/heartbeat|/tmp/chroma.pid|server
-
-# Example: Custom Python service
-my-service|http://127.0.0.1:9000/health||server
-```
-
-### Hermes Model Selection
-
-For your M1 Max 32GB, you can run:
-
-| Model | Size | Speed | Command |
-|-------|------|-------|---------|
-| Hermes-3-3B | ~1.8GB | Very Fast | `macmlx pull mlx-community/Hermes-3-Llama-3.2-3B-4bit` |
-| **Hermes-3-8B** ⭐ | ~5GB | **Fast, Best Quality** | `macmlx pull mlx-community/Hermes-3-Llama-3.1-8B-4bit` |
-| Hermes-3-70B | ~40GB | Too big for 32GB | Skip |
-
-Set your preferred model:
-```bash
-export HERMES_MODEL=mlx-community/Hermes-3-Llama-3.1-8B-4bit
-./install.sh
-```
-
-## Commands
-
-```bash
-# Check status of all agents
-./scripts/agent-heartbeat.sh --status
-
-# Run health check once (manual)
-./scripts/agent-heartbeat.sh --once
-
-# View logs
-tail -f logs/heartbeat.log
-tail -f logs/hermes-3-mlx.log
-
-# Start Hermes manually
-./agents/hermes-3-mlx/hermes-mlx-server.sh
-
-# Stop all agents
-launchctl unload ~/Library/LaunchAgents/com.studex.agent-monitor.plist
-launchctl unload ~/Library/LaunchAgents/com.studex.agents-startup.plist
-
-# Uninstall
-./scripts/uninstall.sh
-```
-
-## How the Monitoring Works
-
-```
-┌─────────────────────────────────────────────────────┐
-│         launchd (runs every hour)                   │
-└─────────────────┬───────────────────────────────────┘
-                  ▼
-┌─────────────────────────────────────────────────────┐
-│    agent-heartbeat.sh --once                        │
-│    (checks all agents in agents.conf)               │
-└─────────────────┬───────────────────────────────────┘
-                  ▼
-    ┌─────────────────┐
-    │ Is process      │────No────┐
-    │ running?        │          │
-    └─────────────────┘          │
-          │ Yes                  │
-          ▼                      │
-    ┌─────────────────┐          │
-    │ HTTP health     │────No────┤
-    │ check pass?     │          │
-    └─────────────────┘          │
-          │ Yes                  │
-          ▼                      ▼
-    ┌─────────┐            ┌─────────┐
-    │ Log     │            │ Restart │
-    │ Healthy │            │ Agent   │
-    └─────────┘            └─────────┘
-```
-
-## File Structure
+## Directory Structure
 
 ```
 agents-dr.fixit/
-├── agents/
-│   └── hermes-3-mlx/
-│       └── hermes-mlx-server.sh    # Hermes 3 MLX launcher
-├── config/
-│   └── agents.conf                  # Agent registry
-├── logs/
-│   ├── heartbeat.log               # Health check logs
-│   ├── hermes-3-mlx.log           # Server logs
-│   └── alerts.log                  # Only alerts/errors
-├── scripts/
-│   ├── agent-heartbeat.sh          # Main monitor
-│   ├── setup-macos.sh             # macOS setup
-│   └── start-all-agents.sh        # Startup script
-├── install.sh                      # Quick installer
-└── README.md                       # This file
+├─ valley/src/           # Core runtime
+│  ├─ core/              # kill-switches, vault, model, classifier, memory, audit, exfil-guard, cost-footer
+│  ├─ tools/cursor.ts    # Cursor IDE wrapper
+│  ├─ agents/            # loader, runner
+│  ├─ warroom/           # room, roster, doc-drop, transcript, commands
+│  ├─ ritual/            # morning, council, snapshot, night-build, problem-picker, build-sandbox, test-loop, proposals
+│  ├─ voice/             # elevenlabs, whisper
+│  ├─ bridges/           # slack, discord
+│  └─ dashboard/         # Hono :3141 (React, kanban, world clocks, SSE)
+├─ agents/               # 11 agent definitions (yaml + CLAUDE.md)
+├─ factory/              # config, scripts, templates, projects
+├─ bridges/              # Slack + Discord bridge servers
+├─ infra/                # scripts, launchd plists
+├─ docs/                 # all documentation
+├─ reference/            # digests
+└─ promo/                # pre-built promo pack (read-only)
 ```
 
-## Log Files
-
-| File | Purpose |
-|------|---------|
-| `logs/heartbeat.log` | Health check runs, agent status |
-| `logs/alerts.log` | Only errors and restarts |
-| `logs/hermes-3-mlx.log` | Model inference logs |
-| `logs/launchd.stderr.log` | Service errors |
-
-## Testing
+## Acceptance Tests
 
 ```bash
-# Test Hermes is responding
-curl http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"Hermes-3-Llama-3.1-8B-4bit","messages":[{"role":"user","content":"Hello"}]}'
-
-# Test heartbeat manually
-./scripts/agent-heartbeat.sh --once
-
-# Simulate crash and see recovery
-# (In another terminal)
-pkill -f "hermes-mlx-server" # or macmlx
-# Then run heartbeat - should auto-restart
-./scripts/agent-heartbeat.sh --once
+npm install
+npm run doctor
+node valley/dist/index.js --smoke
+node factory/scripts/mission.mjs list
+node factory/scripts/warroom.mjs start council --dry-run
+node factory/scripts/night-build.mjs --dry-run
+node factory/scripts/snapshot.mjs --dry-run
+node factory/scripts/heartbeat.mjs
+npm run dashboard:dev   # :3141, world clocks tick
 ```
-
-## Troubleshooting
-
-### "macmlx command not found"
-```bash
-brew install macmlx
-```
-
-### "Permission denied"
-```bash
-chmod +x install.sh
-chmod +x scripts/*.sh
-chmod +x agents/*/*.sh
-```
-
-### Agent won't start
-Check logs:
-```bash
-tail -50 logs/hermes-3-mlx.log
-tail -20 logs/launchd.stderr.log
-```
-
-### Monitor not running
-```bash
-launchctl list | grep studex
-ls ~/Library/LaunchAgents/com.studex.*
-```
-
-## Advanced: Custom Alert Integration
-
-Edit `scripts/agent-heartbeat.sh` and add webhook calls to the `alert()` function:
-
-```bash
-alert() {
-    # Local logging
-    echo "[$(date)] ALERT: $*" | tee -a "$ALERT_LOG"
-    
-    # Add webhook notifications here:
-    # curl -X POST "https://hooks.slack.com/services/YOUR/WEBHOOK/URL" \
-    #   -H 'Content-Type: application/json' \
-    #   -d "{\"text\":\"Agent Alert: $*\"}"
-    
-    # Or n8n webhook:
-    # curl -X POST "http://localhost:5678/webhook/agent-alert" \
-    #   -d "{\"message\":\"$*\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
-}
-```
-
-## Connect to Hermes Desktop App
-
-Once running, configure the Hermes desktop app:
-
-```bash
-hermes model
-# Select: "Custom endpoint"
-# Base URL: http://localhost:8000/v1
-# Model: mlx-community/Hermes-3-Llama-3.1-8B-4bit
-
-hermes  # Launch desktop app
-```
-
-## Performance on M1 Max 32GB
-
-| Model | Memory | Tokens/sec | Use Case |
-|-------|--------|------------|----------|
-| Hermes-3-3B | ~5GB | ~80 tok/s | Quick tasks, testing |
-| Hermes-3-8B | ~12GB | ~45 tok/s | General purpose ⭐ |
-| Qwen3.5-9B | ~12GB | ~50 tok/s | Advanced reasoning |
-
-All models run entirely on GPU (unified memory).
 
 ## License
 
-MIT - For Studex Group internal use.
+MIT — For Studex Group internal use.
 
 ---
 
-**Maintained by**: Tumelo Ramaphosa  
-**Last Updated**: 2025
+**Maintained by**: Tumelo Ramaphosa

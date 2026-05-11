@@ -49,3 +49,10 @@ yarn-error.log*
 
 # Don't ignore empty log directory
 !logs/.gitkeep
+
+# Valley OS build output
+dist/
+*.sqlite
+*.sqlite3
+coverage/
+.vite/

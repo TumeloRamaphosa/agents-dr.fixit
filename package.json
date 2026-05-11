@@ -1,0 +1,30 @@
+{
+  "name": "studex-valley-os",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "valley",
+    "bridges/slack",
+    "bridges/discord"
+  ],
+  "scripts": {
+    "build": "tsc --build valley",
+    "dev": "tsc --build valley --watch",
+    "dashboard:dev": "cd valley && npm run dev",
+    "doctor": "node factory/scripts/doctor.mjs",
+    "lint": "eslint valley/src bridges",
+    "typecheck": "tsc --noEmit --project valley/tsconfig.json",
+    "smoke": "node valley/dist/index.js --smoke",
+    "test": "vitest run --project valley"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "eslint": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "vitest": "^3.0.0"
+  }
+}
