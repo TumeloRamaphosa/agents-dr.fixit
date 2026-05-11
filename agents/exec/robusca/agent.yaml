@@ -1,0 +1,17 @@
+codename: robusca
+role: chief-of-staff
+display_name: Robusca
+description: Chief of Staff — warm SA-English female voice. Anchors 08:00 standup and 09:00 Council. NOT the CTO.
+model:
+  primary:   { provider: ollama, name: qwen2.5-coder:7b, base_url: "" }
+  escalate:  { provider: anthropic, name: claude-sonnet-4-6 }
+  alternates:
+    - { provider: openrouter, name: anthropic/claude-sonnet-4-6 }
+    - { provider: groq, name: llama-3.1-70b-versatile }
+tools:
+  allow: [mission.read, mission.move, vault.read, vault.write_meeting_report, bridge.slack, bridge.discord, schedule.read]
+  deny: [git.push_main, shell.exec.unrestricted, real_money.*]
+voice:
+  elevenlabs_id: SET_IN_AGENTS_JSON
+channels: [slack, discord]
+schedule: ["0 8 * * *", "0 9 * * *"]

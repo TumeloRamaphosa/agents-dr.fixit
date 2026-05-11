@@ -1,0 +1,35 @@
+codename: cto
+role: devops
+display_name: CTO
+description: DevOps — brief engineer voice. Uses Cursor IDE with local Ollama.
+model:
+  primary:   { provider: ollama, name: qwen2.5-coder:7b, base_url: "" }
+  escalate:  { provider: anthropic, name: claude-sonnet-4-6 }
+  alternates:
+    - { provider: openrouter, name: anthropic/claude-sonnet-4-6 }
+    - { provider: groq, name: llama-3.1-70b-versatile }
+tools:
+  allow:
+    - cursor.open_project
+    - cursor.run_cli
+    - cursor.spawn_background_agent
+    - cursor.get_agent
+    - git.read
+    - git.write_branch
+    - github.read
+    - github.write_pr
+    - shell.exec.allowlist
+    - vault.read
+    - vault.write_meeting_report
+    - mission.read
+    - mission.move
+    - bridge.slack
+    - bridge.discord
+  deny:
+    - git.push_main
+    - shell.exec.unrestricted
+    - real_money.*
+voice:
+  elevenlabs_id: SET_IN_AGENTS_JSON
+channels: [slack, discord]
+schedule: []

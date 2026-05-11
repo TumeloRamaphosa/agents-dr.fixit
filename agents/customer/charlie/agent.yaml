@@ -1,0 +1,17 @@
+codename: charlie
+role: customer
+display_name: Charlie
+description: Customer — Studex Meat customer queue specialist.
+model:
+  primary:   { provider: ollama, name: qwen2.5:7b, base_url: "" }
+  escalate:  { provider: anthropic, name: claude-sonnet-4-6 }
+  alternates:
+    - { provider: openrouter, name: anthropic/claude-sonnet-4-6 }
+    - { provider: groq, name: llama-3.1-70b-versatile }
+tools:
+  allow: [support.read, support.write, mission.read, bridge.slack, vault.read]
+  deny: [git.push_main, shell.exec.unrestricted, real_money.*]
+voice:
+  elevenlabs_id: SET_IN_AGENTS_JSON
+channels: [slack, discord]
+schedule: []

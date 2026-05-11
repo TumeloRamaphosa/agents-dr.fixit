@@ -1,0 +1,17 @@
+codename: skunkworks
+role: devops
+display_name: Skunk Works
+description: DevOps — builds prototypes during Night Build. Receives hand-offs from Research.
+model:
+  primary:   { provider: ollama, name: qwen2.5-coder:7b, base_url: "" }
+  escalate:  { provider: anthropic, name: claude-sonnet-4-6 }
+  alternates:
+    - { provider: openrouter, name: anthropic/claude-sonnet-4-6 }
+    - { provider: groq, name: llama-3.1-70b-versatile }
+tools:
+  allow: [git.read, git.write_branch, shell.exec.allowlist, vault.read, mission.read]
+  deny: [git.push_main, shell.exec.unrestricted, real_money.*]
+voice:
+  elevenlabs_id: SET_IN_AGENTS_JSON
+channels: [slack, discord]
+schedule: []
