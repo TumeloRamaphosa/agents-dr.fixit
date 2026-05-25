@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { C } from "./constants.js"
 import { VMS } from "./data.js"
+import { OllamaAssistant } from "./OllamaAssistant.jsx"
 import "./studex-command.css"
 import { CognitivePage } from "./CognitivePage.jsx"
 import { InfraPage } from "./InfraPage.jsx"
@@ -20,6 +21,7 @@ const PAGES = [
 
 export default function StudexCommand() {
   const [page, setPage] = useState("infra")
+  const [assistantOpen, setAssistantOpen] = useState(false)
   const [time, setTime] = useState(
     () => new Date().toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
   )
@@ -84,7 +86,25 @@ export default function StudexCommand() {
             </nav>
           </div>
 
-          <div className="studex-command-header-right" style={{ display: "flex", alignItems: "center", gap: 20, flexShrink: 0 }}>
+          <div className="studex-command-header-right" style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => setAssistantOpen(true)}
+              className="mono"
+              style={{
+                padding: "6px 12px",
+                background: "rgba(0,212,255,.08)",
+                border: `1px solid rgba(0,212,255,.25)`,
+                color: C.arc,
+                fontFamily: "'JetBrains Mono',monospace",
+                fontSize: ".4rem",
+                letterSpacing: ".12em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+              }}
+            >
+              Ask LLM
+            </button>
             <div style={{ display: "flex", gap: 4 }} aria-hidden>
               {VMS.map((v, i) => (
                 <div
@@ -116,6 +136,8 @@ export default function StudexCommand() {
         <div style={{ flex: 1, overflow: "hidden", position: "relative", zIndex: 1 }}>
           <Active />
         </div>
+
+        <OllamaAssistant open={assistantOpen} onClose={() => setAssistantOpen(false)} />
       </div>
     </div>
   )
