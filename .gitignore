@@ -63,3 +63,7 @@ yarn-error.log*
 # Build artifacts
 dist/
 build/
+
+# SQLite databases (runtime data)
+*.db
+valley/data/
