@@ -58,7 +58,7 @@ SALES:
 - Break-even target: R${context.costs?.breakEven || 5000}
 
 SOCIAL MEDIA:
-- Instagram engagement: ${context.social?.instagram || 'N/A'
+- Instagram engagement: ${context.social?.instagram || 'N/A'}
 - Twitter/X mentions: ${context.social?.twitter || 'N/A'}
 - Content posted: ${context.social?.contentPosted || 0}
 

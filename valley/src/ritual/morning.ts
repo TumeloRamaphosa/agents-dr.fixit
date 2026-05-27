@@ -30,7 +30,7 @@ interface MorningContext {
   content: {
     postedYesterday: number;
     scheduledToday: number;
-    top performer: string;
+    'top performer': string;
   };
   yesterdayTasks: string[];
 }
@@ -47,7 +47,7 @@ async function loadContext(): Promise<MorningContext> {
       sales: { today: 0, yesterday: 0, thisWeek: 0, studexMeat: 0, studexCoffee: 0, studexWheat: 0 },
       social: { instagram: { followers: 0, engagement: 'N/A', posts: 0 }, twitter: { mentions: 0, engagement: 'N/A' }, overallSentiment: 'neutral' },
       costs: { dailyBudget: 3.4, spent: 0, onTrack: true, breakEven: 5000 },
-      content: { postedYesterday: 0, scheduledToday: 0, top performer: 'N/A' },
+      content: { postedYesterday: 0, scheduledToday: 0, 'top performer': 'N/A' },
       yesterdayTasks: []
     };
   }

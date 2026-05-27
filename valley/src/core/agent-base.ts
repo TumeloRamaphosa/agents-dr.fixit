@@ -63,6 +63,7 @@ export class BaseAgent {
       content: `User: ${message}\nAgent: ${response}`,
       type: 'episodic',
       agentId: this.id,
+      timestamp: new Date(),
       importance: 0.7,
       metadata: { ...context, timestamp: new Date().toISOString() }
     });
@@ -186,6 +187,7 @@ Respond as ${this.name}:`;
       content,
       type: 'semantic',
       agentId: this.id,
+      timestamp: new Date(),
       importance,
       metadata: { learnedAt: new Date().toISOString() }
     });
