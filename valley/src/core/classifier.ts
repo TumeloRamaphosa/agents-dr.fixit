@@ -1,11 +1,10 @@
 /**
  * Classifier Core
  * Smart routing of messages to appropriate agents
- * Uses Claude for complex routing, local models for fast classification
+ * Uses the unified LLM provider for classification
  */
 
-import { Anthropic } from '@anthropic-ai/sdk';
-import { Ollama } from 'ollama';
+import { llmProvider } from './llm-provider.js';
 
 export interface Message {
   id: string;
@@ -24,117 +23,78 @@ export interface ClassificationResult {
 }
 
 export class Classifier {
-  private anthropic: Anthropic | null = null;
-  private ollama: Ollama;
-  private localModel: string = 'qwen2.5:7b';
-  
-  constructor() {
-    this.ollama = new Ollama({ host: 'http://localhost:11434' });
-    
-    // Only initialize Anthropic for escalated queries
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (apiKey) {
-      this.anthropic = new Anthropic({ apiKey });
-    }
-  }
-  
+  private keywordMap: Record<string, string[]> = {
+    robusca: ['standup', 'morning', 'greeting', 'hello', 'plan', 'today', 'schedule'],
+    cto: ['infrastructure', 'server', 'uptime', 'system', 'health', 'status', 'agents', 'technical'],
+    openclaw: ['code', 'deploy', 'build', 'github', 'repo', 'pr', 'pull request', 'commit'],
+    cashclaw: ['sales', 'revenue', 'invoice', 'stripe', 'payment', 'money', 'budget', 'cost'],
+    denchclaw: ['customer', 'support', 'ticket', 'complaint', 'signup', 'whatsapp'],
+    charlie: ['meat', 'beef', 'chicken', 'biltong', 'braai', 'order', 'delivery', 'halal'],
+    goose: ['document', 'docs', 'summary', 'write', 'readme', 'knowledge'],
+    hermes: ['research', 'analyze', 'strategy', 'deep', 'evaluate', 'investigate'],
+    skunkworks: ['devops', 'bug', 'linear', 'deploy', 'ci', 'pipeline', 'alert'],
+    clawx: ['scrape', 'browser', 'crawl', 'extract', 'automate'],
+    research: ['trend', 'social', 'instagram', 'twitter', 'reddit', 'viral'],
+    drfixit: ['health', 'heartbeat', 'restart', 'repair', 'monitor', 'down']
+  };
+
   async classify(message: Message): Promise<ClassificationResult> {
-    const startTime = Date.now();
-    
-    // Fast local classification for common queries
-    const fastResult = await this.fastClassify(message);
-    
-    if (fastResult.confidence > 0.85) {
-      return { ...fastResult, escalated: false };
+    // Fast keyword-based classification first
+    const keywordResult = this.keywordClassify(message.content);
+    if (keywordResult.confidence > 0.7) {
+      return { ...keywordResult, escalated: false };
     }
-    
-    // Escalate to Claude for complex routing
-    if (this.anthropic) {
-      const claudeResult = await this.claudeClassify(message);
-      return { ...claudeResult, escalated: true };
-    }
-    
-    return { ...fastResult, escalated: false };
-  }
-  
-  private async fastClassify(message: Message): Promise<Omit<ClassificationResult, 'escalated'>> {
-    const prompt = `Classify this message to the best agent:
 
-Message: "${message.content}"
-Channel: ${message.channel}
-
-Available agents:
-- robusca: Daily standup, planning, general coordination
-- cto: Infrastructure, technical issues, system status
-- openclaw: Code, development, deployments, repos
-- cashclaw: Sales, revenue, CRM, invoices, Stripe
-- denchclaw: Customer relations, support, signups
-- charlie: StudEx Meat customers specifically
-- goose: Documentation, summaries, knowledge
-- hermes: Deep research, analysis, complex thinking
-- skunkworks: DevOps, Linear tickets, bugs, infrastructure
-- clawx: Browser automation, scrapers, data extraction
-- research: Trends, social media, new agents discovery
-- drfixit: System health, repairs, monitoring
-
-Respond ONLY with JSON: {"agentId": "name", "confidence": 0.0-1.0, "reason": "brief"}`;
-
+    // Try LLM classification for ambiguous messages
     try {
-      const response = await this.ollama.generate({
-        model: this.localModel,
-        prompt,
-        stream: false,
-        options: { temperature: 0.1 }
-      });
-      
-      const result = JSON.parse(response.response);
-      return {
-        agentId: result.agentId,
-        confidence: result.confidence,
-        reason: result.reason
-      };
-    } catch (error) {
-      console.error('Fast classification failed:', error);
-      return {
-        agentId: 'robusca',
-        confidence: 0.5,
-        reason: 'Fallback due to classification error'
-      };
+      const llmResult = await this.llmClassify(message);
+      return { ...llmResult, escalated: true };
+    } catch {
+      // Fall back to keyword result
+      return { ...keywordResult, escalated: false };
     }
   }
-  
-  private async claudeClassify(message: Message): Promise<Omit<ClassificationResult, 'escalated'>> {
-    if (!this.anthropic) {
-      throw new Error('Anthropic not initialized');
+
+  private keywordClassify(content: string): Omit<ClassificationResult, 'escalated'> {
+    const lower = content.toLowerCase();
+    let bestAgent = 'robusca';
+    let bestScore = 0;
+
+    for (const [agentId, keywords] of Object.entries(this.keywordMap)) {
+      const matches = keywords.filter(kw => lower.includes(kw)).length;
+      const score = matches / keywords.length;
+      if (score > bestScore) {
+        bestScore = score;
+        bestAgent = agentId;
+      }
     }
-    
-    const response = await this.anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 150,
-      temperature: 0,
-      messages: [{
-        role: 'user',
-        content: `Route this message to the best agent. Available: robusca (standup), cto (infra), openclaw (code), cashclaw (sales), denchclaw (support), charlie (meat), goose (docs), hermes (research), skunkworks (devops), clawx (automation), research (trends), drfixit (health).
 
-Message: "${message.content}"
-
-Return JSON: {"agentId": "name", "confidence": 0.0-1.0, "reason": "why"}`
-      }]
-    });
-    
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const result = JSON.parse(text);
-    
     return {
-      agentId: result.agentId,
-      confidence: result.confidence,
-      reason: result.reason + ' [Claude routed]'
+      agentId: bestAgent,
+      confidence: Math.min(bestScore * 3, 0.95) || 0.5,
+      reason: bestScore > 0 ? 'Keyword match' : 'Default routing to Robusca'
     };
   }
-  
-  // Cost tracking for routing decisions
-  async getClassificationCost(): Promise<number> {
-    // Track which routing path was used
-    return 0.001; // Approximate cost placeholder
+
+  private async llmClassify(message: Message): Promise<Omit<ClassificationResult, 'escalated'>> {
+    const result = await llmProvider.chat([
+      {
+        role: 'system',
+        content: `You are a message router. Classify the user message to the best agent.
+Available agents: robusca (standup/general), cto (infra/tech), openclaw (code), cashclaw (sales), denchclaw (support), charlie (meat products), goose (docs), hermes (research), skunkworks (devops), clawx (scraping), research (trends), drfixit (health monitoring).
+Respond ONLY with JSON: {"agentId": "name", "confidence": 0.0-1.0, "reason": "brief"}`
+      },
+      { role: 'user', content: message.content }
+    ], { temperature: 0.1, maxTokens: 100 });
+
+    try {
+      const jsonMatch = result.content.match(/\{[^}]+\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return { agentId: parsed.agentId, confidence: parsed.confidence, reason: parsed.reason };
+      }
+    } catch { /* fall through */ }
+
+    return { agentId: 'robusca', confidence: 0.5, reason: 'LLM classification fallback' };
   }
 }

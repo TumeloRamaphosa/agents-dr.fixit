@@ -8,6 +8,7 @@ import { MemoryStore } from './memory.js';
 import { exfilGuard } from './exfil-guard.js';
 import { costFooter } from './cost-footer.js';
 import { eventBus } from './event-bus.js';
+import { llmProvider } from './llm-provider.js';
 
 export interface AgentConfig {
   id: string;
@@ -85,12 +86,20 @@ export class BaseAgent {
       const memories = await this.memory.retrieve(message, this.id, 5);
       const memoryContext = memories.map(m => m.entry.content).join('\n');
 
-      // Route to appropriate LLM
+      // Route through unified LLM provider (auto-fallback chain)
       let response: string;
-      if (this.provider === 'ollama' || costFooter.shouldUseLocal()) {
-        response = await this.processWithOllama(message, memoryContext, context);
-      } else {
-        response = await this.processWithClaude(message, memoryContext, context);
+      try {
+        const result = await llmProvider.chat([
+          { role: 'system', content: this.systemPrompt + (memoryContext ? '\n\nRecent context:\n' + memoryContext : '') },
+          { role: 'user', content: message + (context ? `\n\nContext: ${JSON.stringify(context)}` : '') }
+        ], {
+          temperature: 0.7,
+          maxTokens: 4096,
+          agentId: this.id
+        });
+        response = result.content;
+      } catch (error: any) {
+        response = `[${this.name}] All inference providers unavailable: ${error.message}`;
       }
 
       // Store interaction in memory
@@ -170,7 +179,7 @@ export class BaseAgent {
   ): Promise<string> {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return this.processWithOllama(message, memoryContext, context);
+      return `[${this.name}] No API key configured. Set ANTHROPIC_API_KEY to enable cloud inference.`;
     }
 
     try {
@@ -200,8 +209,10 @@ export class BaseAgent {
       });
 
       return text;
-    } catch {
-      return this.processWithOllama(message, memoryContext, context);
+    } catch (error: any) {
+      const errMsg = error?.message || 'Unknown error';
+      console.error(`[${this.name}] Claude API error: ${errMsg}`);
+      return `[${this.name}] Cloud inference error: ${errMsg}`;
     }
   }
 

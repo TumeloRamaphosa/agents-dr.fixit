@@ -26,6 +26,7 @@ import { costFooter } from './core/cost-footer.js';
 import { scheduler } from './core/scheduler.js';
 import { voiceEngine } from './core/voice.js';
 import { exfilGuard } from './core/exfil-guard.js';
+import { llmProvider } from './core/llm-provider.js';
 import { ALL_AGENTS } from './agents/index.js';
 
 dotenv.config();
@@ -47,12 +48,13 @@ async function startAPI() {
   const wsClients = new Set<any>();
 
   api.register(async function (app) {
-    app.get('/ws', { websocket: true }, (socket) => {
+    app.get('/ws', { websocket: true }, (connection) => {
+      const socket = connection.socket;
       wsClients.add(socket);
       socket.send(JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() }));
 
       socket.on('close', () => wsClients.delete(socket));
-      socket.on('message', async (msg: Buffer) => {
+      socket.on('message', async (msg: any) => {
         try {
           const data = JSON.parse(msg.toString());
           if (data.type === 'chat') {
@@ -186,6 +188,18 @@ async function startAPI() {
       source: query.source,
       limit: parseInt(query.limit || '50')
     });
+  });
+
+  // ─── LLM Provider ─────────────────────────────────────────────────────────
+
+  api.get('/api/llm', async () => ({
+    active: llmProvider.getActiveProvider(),
+    providers: llmProvider.getProviders()
+  }));
+
+  api.post<{ Body: { provider: string } }>('/api/llm/switch', async (request) => {
+    const success = llmProvider.setActiveProvider(request.body.provider);
+    return { success, active: llmProvider.getActiveProvider() };
   });
 
   // ─── Security ───────────────────────────────────────────────────────────────
