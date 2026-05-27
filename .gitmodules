@@ -1,0 +1,3 @@
+[submodule "workspace-ui"]
+	path = workspace-ui
+	url = https://github.com/outsourc-e/hermes-workspace.git

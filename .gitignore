@@ -67,3 +67,4 @@ build/
 # SQLite databases (runtime data)
 *.db
 valley/data/
+workspace-ui/node_modules/
