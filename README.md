@@ -16,6 +16,14 @@ Continuous uptime for your local MLX inference servers with automatic restart, h
 - 🎯 **Multi-Agent**: Support for unlimited agents in one config file
 - 🍎 **macOS Native**: Uses launchd (proper Mac service management)
 
+## Studex Command Dashboard
+
+Web command centre for Fly infra, cognitive repository, SOULDOC, and a local Ollama copilot with skills. See [`studex-command-dashboard/README.md`](studex-command-dashboard/README.md).
+
+```bash
+cd studex-command-dashboard && npm install && npm run dev
+```
+
 ## Directory Structure
 
 ```
