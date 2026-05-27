@@ -1,46 +1,99 @@
 # Studex Command — Management Dashboard
 
-SPA for the Studex Command experience: Infrastructure (Fly layout + demo logs), Cognitive Repository / Founder variant, Soul Document (SOULDOC), and a local **Ollama** assistant with toggleable **skills**.
+Production-ready SPA for Studex Command: **Infrastructure** (Fly Machines + demo fallback), **Cognitive Repository**, **Founder's Brain**, **Soul Document (SOULDOC)**, and a local **Ollama** assistant with toggleable **skills**.
 
-## Prerequisites
+## Quick start
 
-Node 20+
+```bash
+cd studex-command-dashboard
+cp .env.example .env    # optional: Fly token + model tag
+npm install
+npm run dev             # http://localhost:5173
+```
+
+**Ollama** (separate terminal):
+
+```bash
+ollama pull llama3.2:latest
+ollama serve
+```
+
+Open the dashboard → **Ask LLM** in the header.
+
+## Features
+
+| Area | Status |
+|------|--------|
+| Four dashboard pages | ✅ |
+| Responsive layout | ✅ |
+| Ollama assistant + skills | ✅ |
+| Fly Machines live state (optional token) | ✅ with fallback demo |
+| Assistant prefs in `localStorage` | ✅ |
+| CI (lint + build) | ✅ |
+| Docker static + `/ollama` proxy | ✅ |
+
+## Environment
+
+Copy `.env.example` → `.env`:
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_OLLAMA_MODEL` | Default model tag in UI |
+| `VITE_OLLAMA_BASE_URL` | Override Ollama origin (default `/ollama` proxy) |
+| `VITE_FLY_API_TOKEN` | Fly Machines API (dev/preview proxy only — **never commit**) |
+
+Live Fly state: token is read by **Vite** and attached server-side to `/fly` → `api.machines.dev`. Without a token, infra stays in **Demo** mode with seeded metrics.
+
+## Ollama proxy
+
+- **`npm run dev`** and **`npm run preview`** proxy **`/ollama` → `127.0.0.1:11434`**
+- **Docker** image proxies **`/ollama/`** to **`host.docker.internal:11434`**
+- Direct browser → Ollama requires **`OLLAMA_ORIGINS`** if you set `VITE_OLLAMA_BASE_URL=http://127.0.0.1:11434`
+
+## Assistant skills
+
+Defined in **`src/studex-command/assistantSkills.js`**. Skills extend the **system prompt** each request; **Board snapshot** injects mock VM/brain/log context from **`data.js`**. Not tool-calling yet.
+
+## Project layout
+
+```
+src/studex-command/
+  StudexCommand.jsx      # shell + nav
+  InfraPage.jsx          # Fly live/demo infra
+  CognitivePage.jsx      # brain + logs
+  SoulDocPage.jsx
+  OllamaAssistant.jsx
+  assistantSkills.js
+  flyClient.js           # Machines API client
+  ollamaClient.js
+  data.js                # mock narrative data
+```
 
 ## Scripts
 
 ```bash
-npm install
-npm run dev    # http://localhost:5173
-npm run build  # outputs to dist/
+npm run dev
+npm run build      # dist/
+npm run preview    # production build + dev proxies
 npm run lint
 ```
 
-## Ollama (local LLM)
+## Docker
 
-1. Install and run **Ollama** with `ollama serve` (defaults to port **11434**).
-2. Pull a model once, for example **`llama3.2:latest`** (see `.env.example` for `VITE_OLLAMA_MODEL`).
-3. **`npm run dev`** proxies **`/ollama` → `http://127.0.0.1:11434`**, so the browser never talks to `:11434` directly (no CORS pain in development).
-4. In the dashboard header choose **Ask LLM** → set model tag if needed → chat.
+```bash
+docker build -t studex-command .
+docker run --rm -p 8080:80 studex-command
+# Ollama must run on the host; container proxies /ollama to host.docker.internal:11434
+```
 
-Production / static hosting:
+Optional Fly proxy in container: pass `-e FLY_API_TOKEN=...` at run time.
 
-- Configure **`VITE_OLLAMA_BASE_URL`** at build time, and permit browser origins from Ollama via **`OLLAMA_ORIGINS`** (see Ollama docs), **or**
-- Serve the SPA behind your own reverse proxy that forwards **`/ollama`** to **`127.0.0.1:11434`**.
+## Recommended Ollama model
 
-## Assistant “skills”
+**`llama3.2:latest` (8B)** — best balance for ops Q&A on a typical dev laptop. Use **`llama3.2:3b`** if RAM is tight; **`qwen2.5:7b-instruct`** if you want stronger reasoning.
 
-Skills are **not** MCP tools yet: they extend the assistant’s **system prompt** each request. **`Board snapshot`** also injects a **mock** VM / cognitive / log digest from `src/studex-command/data.js` so replies can reference dashboard-shaped context.
+## Next integrations (optional)
 
-Editable definitions live in **`src/studex-command/assistantSkills.js`** (`ASSISTANT_SKILLS`, `DEFAULT_SKILL_IDS`).
-
-## Project layout
-
-- `src/studex-command/` — dashboard UI, themed CSS scoped under `.studex-command`
-- `src/studex-command/data.js` — mock VM definitions and narrative logs (replace with Fly Machines API responses when wired)
-- `src/studex-command/assistantSkills.js` — LLM behaviour modes + composed system prompt
-- `src/util/seededRng.js` — deterministic demo metrics per VM ID (stable across mounts)
-
-## Production notes
-
-- Styles avoid mutating global `body` scroll; only `#root` is sized via `src/index.css`.
-- Demo copy on Infrastructure clarifies mocked metrics vs a future Machines API integration.
+- Real memory logs from Supabase / n8n webhooks
+- Ollama tool-calling for `flyctl` or Slack
+- Replace mock `data.js` with live API modules

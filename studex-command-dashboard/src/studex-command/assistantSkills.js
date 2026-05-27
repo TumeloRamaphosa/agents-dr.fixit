@@ -61,10 +61,14 @@ function formatSnapshot() {
   return lines.join("\n")
 }
 
-/** @param {string[]} skillIds */
-export function composeSystemPrompt(skillIds) {
+/** @param {string[]} skillIds @param {{ activePage?: string }} [ctx] */
+export function composeSystemPrompt(skillIds, ctx = {}) {
   const selected = new Set(skillIds)
   const parts = [BASE_SYSTEM]
+
+  if (ctx.activePage) {
+    parts.push(`## UI context\nOperator is viewing dashboard page: **${ctx.activePage}**.`)
+  }
 
   for (const s of ASSISTANT_SKILLS) {
     if (!selected.has(s.id)) continue

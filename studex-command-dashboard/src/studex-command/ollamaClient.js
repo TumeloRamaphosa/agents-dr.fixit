@@ -1,17 +1,14 @@
 /**
  * Ollama HTTP API base URL.
- * - In Vite dev: default `/ollama` is proxied to `http://127.0.0.1:11434` (see vite.config.js).
- * - In production / preview: set `VITE_OLLAMA_BASE_URL` (and enable CORS on Ollama via `OLLAMA_ORIGINS`, see README).
+ * Default `/ollama` expects a reverse proxy (Vite dev, nginx Docker, or your edge).
+ * Override with VITE_OLLAMA_BASE_URL for a direct origin (requires Ollama CORS).
  */
 export function getOllamaBaseUrl() {
   const fromEnv = import.meta.env.VITE_OLLAMA_BASE_URL
   if (fromEnv && typeof fromEnv === "string" && fromEnv.trim()) {
     return fromEnv.replace(/\/$/, "")
   }
-  if (import.meta.env.DEV) {
-    return "/ollama"
-  }
-  return ""
+  return "/ollama"
 }
 
 export function getDefaultModel() {
@@ -23,11 +20,6 @@ export function getDefaultModel() {
 /** @param {{ model: string, messages: Array<{ role: string, content: string }>, signal?: AbortSignal }} opts */
 export async function ollamaChat({ model, messages, signal }) {
   const base = getOllamaBaseUrl()
-  if (!base) {
-    throw new Error(
-      "No Ollama base URL. Run `npm run dev` (proxy) or set VITE_OLLAMA_BASE_URL with CORS on Ollama.",
-    )
-  }
   const url = `${base}/api/chat`
   const res = await fetch(url, {
     method: "POST",

@@ -2,8 +2,9 @@ import { useMemo } from "react"
 import { C } from "./constants.js"
 import { seededRng } from "../util/seededRng.js"
 
-export function VMCard({ vm, onClick, selected }) {
-  const { status, metrics } = useMemo(() => {
+/** @param {{ vm: object, onClick: (vm: object) => void, selected: boolean, live?: object | null }} props */
+export function VMCard({ vm, onClick, selected, live = null }) {
+  const demo = useMemo(() => {
     const rng = seededRng(Number(vm.id) * 9973 + 1337)
     const run = rng() > 0.15 ? "running" : "stopped"
     return {
@@ -11,12 +12,24 @@ export function VMCard({ vm, onClick, selected }) {
       metrics: {
         cpu: Math.floor(rng() * 45 + 5),
         mem: Math.floor(rng() * 60 + 20),
-        reqs: Math.floor(rng() * 200 + 10),
       },
     }
   }, [vm.id])
 
+  const status = live?.status ?? demo.status
   const statusColor = status === "running" ? C.ok : C.err
+
+  const metricCells = live
+    ? [
+        { label: "CPU", value: `${live.cpus || vm.cpu} vCPU`, bar: null },
+        { label: "MEM", value: `${live.memoryMb || vm.mem} MB`, bar: null },
+        { label: "Region", value: (live.region || vm.region.toUpperCase()).toUpperCase(), bar: null },
+      ]
+    : [
+        { label: "CPU", value: `${demo.metrics.cpu}%`, bar: demo.metrics.cpu },
+        { label: "MEM", value: `${demo.metrics.mem}%`, bar: demo.metrics.mem },
+        { label: "Region", value: vm.region.toUpperCase(), bar: null },
+      ]
 
   return (
     <div
@@ -61,6 +74,7 @@ export function VMCard({ vm, onClick, selected }) {
             style={{ fontSize: ".42rem", color: C.ink4, letterSpacing: ".06em", marginTop: 2 }}
           >
             {vm.app}.fly.dev
+            {live?.machineCount && live.machineCount > 1 ? ` · ${live.machineCount} machines` : ""}
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -92,11 +106,7 @@ export function VMCard({ vm, onClick, selected }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        {[
-          { label: "CPU", value: `${metrics.cpu}%`, bar: metrics.cpu },
-          { label: "MEM", value: `${metrics.mem}%`, bar: metrics.mem },
-          { label: "Region", value: vm.region.toUpperCase(), bar: null },
-        ].map((m) => (
+        {metricCells.map((m) => (
           <div key={m.label}>
             <div
               className="mono"
@@ -114,16 +124,14 @@ export function VMCard({ vm, onClick, selected }) {
               className="mono"
               style={{
                 fontSize: ".56rem",
-                color: m.bar > 70 ? C.warn : C.vg,
+                color: m.bar && m.bar > 70 ? C.warn : C.vg,
                 marginBottom: m.bar ? 4 : 0,
               }}
             >
               {m.value}
             </div>
             {m.bar !== null && (
-              <div
-                style={{ height: 2, background: "rgba(201,169,98,.1)", borderRadius: 1, overflow: "hidden" }}
-              >
+              <div style={{ height: 2, background: "rgba(201,169,98,.1)", borderRadius: 1, overflow: "hidden" }}>
                 <div
                   style={{
                     height: "100%",

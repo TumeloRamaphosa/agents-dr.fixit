@@ -42,9 +42,9 @@ export default function StudexCommand() {
         <header
           className="studex-command-header"
           style={{
-            height: 48,
+            minHeight: 48,
             flexShrink: 0,
-            padding: "0 24px",
+            padding: "8px 24px",
             background: "rgba(10,8,6,.95)",
             borderBottom: `1px solid ${C.rule}`,
           }}
@@ -137,7 +137,11 @@ export default function StudexCommand() {
           <Active />
         </div>
 
-        <OllamaAssistant open={assistantOpen} onClose={() => setAssistantOpen(false)} />
+        <OllamaAssistant
+          open={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
+          activePage={PAGES.find((p) => p.id === page)?.label ?? page}
+        />
       </div>
     </div>
   )

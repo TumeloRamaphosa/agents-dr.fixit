@@ -1,16 +1,20 @@
-import { useCallback, useId, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import {
   ASSISTANT_SKILLS,
   composeSystemPrompt,
   DEFAULT_SKILL_IDS,
 } from "./assistantSkills.js"
+import { loadAssistantPrefs, saveAssistantPrefs } from "./assistantStorage.js"
 import { C } from "./constants.js"
 import { getDefaultModel, getOllamaBaseUrl, ollamaChat } from "./ollamaClient.js"
 
-export function OllamaAssistant({ open, onClose }) {
+export function OllamaAssistant({ open, onClose, activePage = "" }) {
   const panelId = useId()
-  const [model, setModel] = useState(() => getDefaultModel())
-  const [skillIds, setSkillIds] = useState(() => [...DEFAULT_SKILL_IDS])
+  const prefs = loadAssistantPrefs()
+  const [model, setModel] = useState(() => prefs.model || getDefaultModel())
+  const [skillIds, setSkillIds] = useState(() =>
+    Array.isArray(prefs.skillIds) && prefs.skillIds.length ? prefs.skillIds : [...DEFAULT_SKILL_IDS],
+  )
   const [input, setInput] = useState("")
   const [transcript, setTranscript] = useState(() => [])
   const [busy, setBusy] = useState(false)
@@ -21,6 +25,10 @@ export function OllamaAssistant({ open, onClose }) {
     const b = getOllamaBaseUrl()
     return b || "(not configured)"
   }, [])
+
+  useEffect(() => {
+    saveAssistantPrefs({ model, skillIds })
+  }, [model, skillIds])
 
   const toggleSkill = useCallback((id) => {
     setSkillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -37,7 +45,7 @@ export function OllamaAssistant({ open, onClose }) {
     setTranscript(history)
     setBusy(true)
 
-    const system = composeSystemPrompt(skillIds)
+    const system = composeSystemPrompt(skillIds, { activePage })
     const apiMessages = [{ role: "system", content: system }, ...history]
 
     try {
@@ -69,7 +77,7 @@ export function OllamaAssistant({ open, onClose }) {
         if (el) el.scrollTop = el.scrollHeight
       })
     }
-  }, [busy, input, model, skillIds, transcript])
+  }, [activePage, busy, input, model, skillIds, transcript])
 
   const clearChat = useCallback(() => {
     setTranscript([])
