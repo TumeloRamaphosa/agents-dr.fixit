@@ -113,8 +113,9 @@ class LLMProvider {
     this.activeProvider = this.providers[0] || null;
   }
 
-  getActiveProvider(): LLMConfig | null {
-    return this.activeProvider;
+  getActiveProvider(): Omit<LLMConfig, 'apiKey'> & { apiKey?: string } | null {
+    if (!this.activeProvider) return null;
+    return { ...this.activeProvider, apiKey: this.activeProvider.apiKey ? '***' : undefined };
   }
 
   getProviders(): LLMConfig[] {
