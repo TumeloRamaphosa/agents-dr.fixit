@@ -27,6 +27,8 @@ import { scheduler } from './core/scheduler.js';
 import { voiceEngine } from './core/voice.js';
 import { exfilGuard } from './core/exfil-guard.js';
 import { llmProvider } from './core/llm-provider.js';
+import { sessionManager } from './core/sessions.js';
+import { memoryTree } from './core/memory-tree.js';
 import { ALL_AGENTS } from './agents/index.js';
 
 dotenv.config();
@@ -188,6 +190,45 @@ async function startAPI() {
       source: query.source,
       limit: parseInt(query.limit || '50')
     });
+  });
+
+  // ─── Sessions ───────────────────────────────────────────────────────────────
+
+  api.get('/api/sessions', async (request) => {
+    const query = request.query as any;
+    return sessionManager.getSessions(query.agentId, parseInt(query.limit || '50'));
+  });
+
+  api.post<{ Body: { agentId: string; title?: string } }>('/api/sessions', async (request) => {
+    return sessionManager.createSession(request.body.agentId, request.body.title);
+  });
+
+  api.get<{ Params: { id: string } }>('/api/sessions/:id/messages', async (request) => {
+    return sessionManager.getMessages(request.params.id);
+  });
+
+  api.delete<{ Params: { id: string } }>('/api/sessions/:id', async (request) => {
+    sessionManager.deleteSession(request.params.id);
+    return { success: true };
+  });
+
+  // ─── Memory Tree ────────────────────────────────────────────────────────────
+
+  api.get('/api/memory/tree', async () => memoryTree.getTree());
+
+  api.get<{ Params: { '*': string } }>('/api/memory/file/*', async (request) => {
+    const content = await memoryTree.getFile(request.params['*']);
+    return content ? { content } : { error: 'Not found' };
+  });
+
+  api.post<{ Body: { category: string; title: string; content: string } }>('/api/memory/store', async (request) => {
+    const { category, title, content } = request.body;
+    const filePath = await memoryTree.store(category, title, content);
+    return { success: true, path: filePath };
+  });
+
+  api.post<{ Body: { query: string } }>('/api/memory/search', async (request) => {
+    return memoryTree.search(request.body.query);
   });
 
   // ─── LLM Provider ─────────────────────────────────────────────────────────

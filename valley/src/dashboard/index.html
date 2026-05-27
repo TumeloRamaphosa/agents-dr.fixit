@@ -3,470 +3,321 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Valley OS - Command Center</title>
+  <title>Valley OS — Command Center</title>
   <style>
     :root {
-      --gold: #C9A84C;
-      --gold-dim: #8B7535;
-      --obsidian: #0D0D0D;
-      --dark: #1A1A1A;
-      --card: #222222;
-      --text: #E8E8E8;
-      --text-dim: #888888;
-      --green: #4CAF50;
-      --red: #F44336;
-      --orange: #FF9800;
-      --blue: #2196F3;
+      --gold: #C9A84C; --gold-dim: #8B7535; --gold-glow: rgba(201,168,76,0.15);
+      --obsidian: #0A0A0A; --surface: #141414; --card: #1C1C1C; --border: #2A2A2A;
+      --text: #E8E8E8; --text-dim: #777; --text-muted: #555;
+      --green: #4CAF50; --red: #E53935; --orange: #FF9800; --blue: #42A5F5;
+      --radius: 8px; --font: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--obsidian); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-    body {
-      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
-      background: var(--obsidian);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    /* ─── Header ─── */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .logo { display: flex; align-items: center; gap: 0.6rem; }
+    .logo h1 { font-size: 1.1rem; color: var(--gold); font-weight: 700; letter-spacing: 1.5px; }
+    .logo .tag { font-size: 0.6rem; color: var(--text-dim); background: var(--card); padding: 2px 6px; border-radius: 3px; }
+    .header-right { display: flex; gap: 1rem; align-items: center; font-size: 0.7rem; color: var(--text-dim); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .dot.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
 
-    .header {
-      background: linear-gradient(135deg, var(--dark) 0%, var(--obsidian) 100%);
-      border-bottom: 1px solid var(--gold-dim);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    /* ─── Layout ─── */
+    .workspace { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .main-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .right-panel { width: 320px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+    /* ─── Sidebar ─── */
+    .sidebar-section { padding: 0.8rem; border-bottom: 1px solid var(--border); }
+    .sidebar-title { font-size: 0.65rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .agent-list { list-style: none; max-height: 320px; overflow-y: auto; }
+    .agent-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: background 0.15s; }
+    .agent-item:hover { background: var(--card); }
+    .agent-item.active { background: var(--gold-glow); border: 1px solid var(--gold-dim); }
+    .agent-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .agent-dot.ready { background: var(--green); }
+    .agent-name { color: var(--text); font-weight: 500; }
+    .agent-role { color: var(--text-dim); font-size: 0.6rem; margin-left: auto; }
 
-    .logo h1 {
-      font-size: 1.4rem;
-      color: var(--gold);
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
+    .nav-list { list-style: none; }
+    .nav-item { padding: 0.5rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; color: var(--text-dim); transition: all 0.15s; }
+    .nav-item:hover { background: var(--card); color: var(--text); }
+    .nav-item.active { color: var(--gold); background: var(--gold-glow); }
 
-    .logo .version {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      background: var(--card);
-      padding: 0.2rem 0.5rem;
-      border-radius: 3px;
-    }
+    /* ─── Chat ─── */
+    .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .chat-header { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .chat-agent { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
+    .chat-model { font-size: 0.65rem; color: var(--text-dim); }
+    .messages { flex: 1; overflow-y: auto; padding: 1rem; }
+    .msg { margin-bottom: 1.2rem; max-width: 85%; }
+    .msg.user { margin-left: auto; }
+    .msg.user .msg-bubble { background: var(--gold-glow); border: 1px solid var(--gold-dim); }
+    .msg.assistant .msg-bubble { background: var(--card); border: 1px solid var(--border); }
+    .msg-sender { font-size: 0.65rem; color: var(--gold); margin-bottom: 0.3rem; font-weight: 600; }
+    .msg-bubble { padding: 0.7rem 0.9rem; border-radius: var(--radius); font-size: 0.8rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .msg-time { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .msg-bubble strong { color: var(--gold); }
 
-    .status-bar {
-      display: flex;
-      gap: 1.5rem;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }
+    .chat-input-area { padding: 0.8rem 1rem; border-top: 1px solid var(--border); background: var(--surface); }
+    .chat-input-row { display: flex; gap: 0.5rem; }
+    .chat-input { flex: 1; background: var(--obsidian); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.7rem 1rem; color: var(--text); font-family: var(--font); font-size: 0.8rem; resize: none; outline: none; min-height: 40px; max-height: 120px; }
+    .chat-input:focus { border-color: var(--gold); }
+    .send-btn { background: var(--gold); color: var(--obsidian); border: none; border-radius: var(--radius); padding: 0 1.2rem; font-weight: 700; font-family: var(--font); cursor: pointer; font-size: 0.8rem; }
+    .send-btn:hover { background: var(--gold-dim); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .status-item { display: flex; align-items: center; gap: 0.4rem; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .status-dot.orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
-    .status-dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    /* ─── Right Panel ─── */
+    .panel-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .panel-tab { flex: 1; padding: 0.6rem; text-align: center; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
+    .panel-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .panel-content { flex: 1; overflow-y: auto; padding: 0.8rem; font-size: 0.75rem; }
 
-    .main {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: auto auto 1fr;
-      gap: 1rem;
-      padding: 1.5rem;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
+    .event-item { padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem; }
+    .ev-time { color: var(--text-muted); width: 45px; flex-shrink: 0; }
+    .ev-src { color: var(--gold); width: 70px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; }
+    .ev-msg { color: var(--text-dim); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .card {
-      background: var(--card);
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 1.2rem;
-      transition: border-color 0.3s;
-    }
-    .card:hover { border-color: var(--gold-dim); }
+    .metric-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
+    .metric-label { color: var(--text-dim); }
+    .metric-val { color: var(--gold); font-weight: 600; }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid #333;
-    }
+    .mem-item { padding: 0.5rem; background: var(--card); border-radius: 4px; margin-bottom: 0.5rem; cursor: pointer; }
+    .mem-item:hover { border: 1px solid var(--gold-dim); }
+    .mem-title { color: var(--text); font-weight: 500; font-size: 0.73rem; }
+    .mem-meta { color: var(--text-muted); font-size: 0.6rem; margin-top: 0.2rem; }
 
-    .card-title {
-      font-size: 0.85rem;
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+    .typing { display: inline-block; }
+    .typing::after { content: '▊'; animation: blink 1s infinite; color: var(--gold); }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
 
-    .metrics {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 1rem;
-    }
-
-    .metric {
-      background: var(--card);
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .metric-value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--gold);
-      margin: 0.3rem 0;
-    }
-
-    .metric-label {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .agents-grid {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
-    }
-
-    .agent-card {
-      background: var(--card);
-      border: 1px solid #333;
-      border-radius: 6px;
-      padding: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .agent-card:hover { border-color: var(--gold); transform: translateY(-1px); }
-    .agent-card.active { border-color: var(--green); }
-    .agent-card.error { border-color: var(--red); }
-
-    .agent-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--obsidian);
-      flex-shrink: 0;
-    }
-
-    .agent-info { flex: 1; min-width: 0; }
-    .agent-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
-    .agent-role { font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .agent-status {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .event-log {
-      grid-column: 1 / 3;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .event-list { list-style: none; }
-    .event-item {
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #2a2a2a;
-      font-size: 0.75rem;
-      display: flex;
-      gap: 0.7rem;
-    }
-    .event-time { color: var(--text-dim); flex-shrink: 0; width: 60px; }
-    .event-source { color: var(--gold); flex-shrink: 0; width: 80px; }
-    .event-content { color: var(--text); flex: 1; }
-
-    .chat-panel {
-      grid-column: 3;
-      display: flex;
-      flex-direction: column;
-      max-height: 400px;
-    }
-
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0.5rem 0;
-    }
-
-    .chat-msg {
-      margin-bottom: 0.8rem;
-      font-size: 0.78rem;
-      line-height: 1.4;
-    }
-    .chat-msg .sender { color: var(--gold); font-weight: 600; }
-    .chat-msg .text { color: var(--text); margin-top: 0.2rem; }
-
-    .chat-input {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.8rem;
-    }
-
-    .chat-input input {
-      flex: 1;
-      background: var(--obsidian);
-      border: 1px solid #444;
-      border-radius: 4px;
-      padding: 0.6rem 0.8rem;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.8rem;
-    }
-    .chat-input input:focus { outline: none; border-color: var(--gold); }
-
-    .chat-input button {
-      background: var(--gold);
-      color: var(--obsidian);
-      border: none;
-      border-radius: 4px;
-      padding: 0.6rem 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.8rem;
-    }
-    .chat-input button:hover { background: var(--gold-dim); }
-
-    .schedule-list { list-style: none; }
-    .schedule-item {
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #2a2a2a;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-    }
-    .schedule-time { color: var(--gold); font-weight: 600; }
-    .schedule-name { color: var(--text); }
-
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .pulse { animation: pulse 2s infinite; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="logo">
-      <h1>🏔️ VALLEY OS</h1>
-      <span class="version">v2.0</span>
-    </div>
-    <div class="status-bar">
-      <div class="status-item">
-        <span class="status-dot green" id="ws-status"></span>
-        <span id="ws-label">Connected</span>
-      </div>
-      <div class="status-item">
-        <span id="uptime">0h 0m</span>
-      </div>
-      <div class="status-item">
-        <span id="clock"></span>
-      </div>
+    <div class="logo"><h1>🏔️ VALLEY OS</h1><span class="tag">v2.0 · mimo-v2.5-pro</span></div>
+    <div class="header-right">
+      <span><span class="dot on"></span><span id="agent-count">12</span> agents</span>
+      <span id="clock"></span>
     </div>
   </div>
 
-  <div class="main">
-    <div class="metrics" id="metrics">
-      <div class="metric">
-        <div class="metric-label">Agents Online</div>
-        <div class="metric-value" id="m-agents">0</div>
+  <div class="workspace">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Agents</div>
+        <ul class="agent-list" id="agent-list"></ul>
       </div>
-      <div class="metric">
-        <div class="metric-label">Requests Today</div>
-        <div class="metric-value" id="m-requests">0</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Budget Used</div>
-        <div class="metric-value" id="m-budget">0%</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Avg Latency</div>
-        <div class="metric-value" id="m-latency">0ms</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Uptime</div>
-        <div class="metric-value" id="m-uptime">0h</div>
+      <div class="sidebar-section" style="flex:1;">
+        <div class="sidebar-title">Navigation</div>
+        <ul class="nav-list">
+          <li class="nav-item active" onclick="switchView('chat')">💬 Chat</li>
+          <li class="nav-item" onclick="switchView('operations')">⚙️ Operations</li>
+          <li class="nav-item" onclick="switchView('memory')">🧠 Memory Tree</li>
+          <li class="nav-item" onclick="switchView('scheduler')">⏰ Scheduler</li>
+          <li class="nav-item" onclick="switchView('costs')">💰 Costs</li>
+        </ul>
       </div>
     </div>
 
-    <div class="agents-grid" id="agents-grid"></div>
-
-    <div class="card event-log">
-      <div class="card-header">
-        <span class="card-title">Event Stream</span>
-        <span class="card-title" style="color: var(--text-dim); font-size: 0.65rem;">LIVE</span>
+    <!-- Main -->
+    <div class="main-panel">
+      <div class="chat-area" id="view-chat">
+        <div class="chat-header">
+          <div>
+            <span class="chat-agent" id="chat-target">Robusca</span>
+            <span class="chat-model" id="chat-model">Smart routing enabled</span>
+          </div>
+          <span style="font-size:0.65rem; color:var(--text-dim);" id="session-label">New session</span>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="chat-input-area">
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="input" placeholder="Message Valley OS..." rows="1"></textarea>
+            <button class="send-btn" id="send-btn" onclick="send()">Send</button>
+          </div>
+        </div>
       </div>
-      <ul class="event-list" id="event-list"></ul>
     </div>
 
-    <div class="card chat-panel">
-      <div class="card-header">
-        <span class="card-title">Command Interface</span>
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <div class="panel-tabs">
+        <div class="panel-tab active" onclick="switchTab(this,'events')">Events</div>
+        <div class="panel-tab" onclick="switchTab(this,'stats')">Stats</div>
+        <div class="panel-tab" onclick="switchTab(this,'memory')">Memory</div>
       </div>
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Message any agent..." />
-        <button onclick="sendMessage()">Send</button>
+      <div class="panel-content" id="panel-events">
+        <div id="event-list"></div>
+      </div>
+      <div class="panel-content" id="panel-stats" style="display:none;">
+        <div id="stats-content"></div>
+      </div>
+      <div class="panel-content" id="panel-memory" style="display:none;">
+        <div id="memory-content"></div>
       </div>
     </div>
   </div>
 
   <script>
-    const API_BASE = window.location.hostname === 'localhost'
-      ? 'http://localhost:4200'
-      : `${window.location.protocol}//${window.location.hostname}:4200`;
-    let ws = null;
+    const API = `${location.protocol}//${location.hostname}:4200`;
+    let currentAgent = null;
+    let sending = false;
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleTimeString('en-ZA', { timeZone: 'Africa/Johannesburg' }) + ' SAST';
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+    // ─── Clock ───
+    setInterval(() => {
+      document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-ZA', { timeZone: 'Africa/Johannesburg', hour: '2-digit', minute: '2-digit' }) + ' SAST';
+    }, 1000);
 
-    async function fetchData() {
-      try {
-        const [agents, costs, health] = await Promise.all([
-          fetch(`${API_BASE}/api/agents`).then(r => r.json()),
-          fetch(`${API_BASE}/api/costs`).then(r => r.json()),
-          fetch(`${API_BASE}/api/health`).then(r => r.json()).catch(() => null)
-        ]);
-
-        // Update metrics
-        const ready = agents.agents?.filter(a => a.status === 'ready').length || 0;
-        document.getElementById('m-agents').textContent = `${ready}/${agents.total || 0}`;
-        document.getElementById('m-budget').textContent = `${costs.percentUsed?.toFixed(1) || 0}%`;
-
-        if (health) {
-          document.getElementById('m-requests').textContent = health.totalRequests || '0';
-          const uptimeH = Math.floor((health.uptime || 0) / 3600000);
-          document.getElementById('m-uptime').textContent = `${uptimeH}h`;
-          document.getElementById('uptime').textContent = `Up: ${uptimeH}h`;
-        }
-
-        // Render agents
-        renderAgents(agents.agents || []);
-      } catch (e) {
-        console.error('Fetch error:', e);
-      }
+    // ─── Agents ───
+    async function loadAgents() {
+      const res = await fetch(`${API}/api/agents`).then(r => r.json());
+      const list = document.getElementById('agent-list');
+      list.innerHTML = res.agents.map(a => `
+        <li class="agent-item ${currentAgent === a.id ? 'active' : ''}" onclick="selectAgent('${a.id}','${a.name}')">
+          <span class="agent-dot ready"></span>
+          <span class="agent-name">${a.name}</span>
+          <span class="agent-role">${a.role.split(' ')[0]}</span>
+        </li>`).join('');
+      document.getElementById('agent-count').textContent = res.total;
     }
 
-    function renderAgents(agents) {
-      const grid = document.getElementById('agents-grid');
-      grid.innerHTML = agents.map(a => `
-        <div class="agent-card ${a.status === 'ready' ? 'active' : a.status === 'error' ? 'error' : ''}" onclick="chatAgent('${a.id}')">
-          <div class="agent-avatar">${a.name.slice(0, 2).toUpperCase()}</div>
-          <div class="agent-info">
-            <div class="agent-name">${a.name}</div>
-            <div class="agent-role">${a.role || a.id}</div>
-          </div>
-          <div class="agent-status status-dot ${a.status === 'ready' ? 'green' : a.status === 'error' ? 'red' : 'orange'}"></div>
-        </div>
-      `).join('');
+    function selectAgent(id, name) {
+      currentAgent = id;
+      document.getElementById('chat-target').textContent = name;
+      document.getElementById('chat-model').textContent = `Direct → ${id}`;
+      loadAgents();
     }
 
-    function addEvent(source, content) {
-      const list = document.getElementById('event-list');
+    // ─── Chat ───
+    function addMsg(role, content, sender) {
+      const msgs = document.getElementById('messages');
       const time = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
-      const item = document.createElement('li');
-      item.className = 'event-item';
-      item.innerHTML = `<span class="event-time">${time}</span><span class="event-source">${source}</span><span class="event-content">${content}</span>`;
-      list.prepend(item);
-      if (list.children.length > 50) list.lastChild.remove();
-    }
-
-    function addChatMessage(sender, text) {
-      const msgs = document.getElementById('chat-messages');
       const div = document.createElement('div');
-      div.className = 'chat-msg';
-      div.innerHTML = `<div class="sender">${sender}</div><div class="text">${text}</div>`;
+      div.className = `msg ${role}`;
+      div.innerHTML = `
+        <div class="msg-sender">${sender || role}</div>
+        <div class="msg-bubble">${formatContent(content)}</div>
+        <div class="msg-time">${time}</div>`;
       msgs.appendChild(div);
       msgs.scrollTop = msgs.scrollHeight;
+      return div;
     }
 
-    async function sendMessage() {
-      const input = document.getElementById('chat-input');
-      const message = input.value.trim();
-      if (!message) return;
-      input.value = '';
+    function formatContent(text) {
+      return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    }
 
-      addChatMessage('You', message);
-      addEvent('user', message.slice(0, 60));
+    async function send() {
+      const input = document.getElementById('input');
+      const msg = input.value.trim();
+      if (!msg || sending) return;
+      input.value = '';
+      sending = true;
+      document.getElementById('send-btn').disabled = true;
+
+      addMsg('user', msg, 'You');
+      const typingDiv = addMsg('assistant', '<span class="typing">Thinking</span>', currentAgent || 'Valley OS');
 
       try {
-        const res = await fetch(`${API_BASE}/api/route`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
-        });
+        const endpoint = currentAgent ? `${API}/api/agents/${currentAgent}/chat` : `${API}/api/route`;
+        const body = currentAgent ? { message: msg } : { message: msg };
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await res.json();
-        addChatMessage(data.agentName || 'System', data.response || data.error || 'No response');
-        addEvent(data.agentId || 'system', `Responded (${data.latencyMs}ms)`);
+        const response = data.response || data.error || 'No response';
+        const agent = data.agentName || data.agent || currentAgent || 'System';
+        typingDiv.querySelector('.msg-sender').textContent = agent;
+        typingDiv.querySelector('.msg-bubble').innerHTML = formatContent(response);
+        addEvent(agent, `Responded (${data.latencyMs || '?'}ms)`);
       } catch (e) {
-        addChatMessage('System', 'Error connecting to Valley OS API');
+        typingDiv.querySelector('.msg-bubble').textContent = 'Connection error';
       }
+      sending = false;
+      document.getElementById('send-btn').disabled = false;
     }
 
-    function chatAgent(agentId) {
-      const input = document.getElementById('chat-input');
-      input.value = `@${agentId} `;
-      input.focus();
-    }
-
-    document.getElementById('chat-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
+    document.getElementById('input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
 
-    function connectWebSocket() {
-      try {
-        ws = new WebSocket(`ws://${window.location.hostname}:4200/ws`);
-        ws.onopen = () => {
-          document.getElementById('ws-status').className = 'status-dot green';
-          document.getElementById('ws-label').textContent = 'Connected';
-          addEvent('system', 'WebSocket connected');
-        };
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          if (data.type === 'event') addEvent(data.source || 'system', data.payload?.toString()?.slice(0, 80) || data.type);
-        };
-        ws.onclose = () => {
-          document.getElementById('ws-status').className = 'status-dot orange';
-          document.getElementById('ws-label').textContent = 'Reconnecting...';
-          setTimeout(connectWebSocket, 3000);
-        };
-      } catch {
-        setTimeout(connectWebSocket, 5000);
-      }
+    // ─── Events ───
+    function addEvent(src, msg) {
+      const list = document.getElementById('event-list');
+      const time = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const div = document.createElement('div');
+      div.className = 'event-item';
+      div.innerHTML = `<span class="ev-time">${time}</span><span class="ev-src">${src}</span><span class="ev-msg">${msg}</span>`;
+      list.prepend(div);
+      if (list.children.length > 100) list.lastChild.remove();
     }
 
-    // Initial load
-    fetchData();
-    setInterval(fetchData, 5000);
-    connectWebSocket();
-    addEvent('system', 'Valley OS Dashboard initialized');
+    // ─── Tabs ───
+    function switchTab(el, tab) {
+      document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('panel-events').style.display = tab === 'events' ? '' : 'none';
+      document.getElementById('panel-stats').style.display = tab === 'stats' ? '' : 'none';
+      document.getElementById('panel-memory').style.display = tab === 'memory' ? '' : 'none';
+      if (tab === 'stats') loadStats();
+      if (tab === 'memory') loadMemory();
+    }
+
+    async function loadStats() {
+      const [stats, costs] = await Promise.all([
+        fetch(`${API}/api/stats`).then(r => r.json()),
+        fetch(`${API}/api/costs`).then(r => r.json())
+      ]);
+      document.getElementById('stats-content').innerHTML = `
+        <div class="metric-row"><span class="metric-label">Agents</span><span class="metric-val">${stats.orchestrator.agentCount}</span></div>
+        <div class="metric-row"><span class="metric-label">Requests</span><span class="metric-val">${stats.orchestrator.totalRequests}</span></div>
+        <div class="metric-row"><span class="metric-label">Uptime</span><span class="metric-val">${Math.round(stats.orchestrator.uptime/60000)}m</span></div>
+        <div class="metric-row"><span class="metric-label">Daily Budget</span><span class="metric-val">$${costs.dailyBudget}</span></div>
+        <div class="metric-row"><span class="metric-label">Spent Today</span><span class="metric-val">$${costs.dailySpent.toFixed(4)}</span></div>
+        <div class="metric-row"><span class="metric-label">Remaining</span><span class="metric-val">$${costs.remaining.toFixed(2)}</span></div>
+        <div class="metric-row"><span class="metric-label">LLM Provider</span><span class="metric-val">${stats.scheduler?.running ? 'Active' : 'Off'}</span></div>
+        <div class="metric-row"><span class="metric-label">Voice</span><span class="metric-val">${stats.voice?.enabled ? 'Active' : 'Off'}</span></div>
+        <div class="metric-row"><span class="metric-label">Rituals</span><span class="metric-val">${stats.scheduler?.rituals?.length || 0}</span></div>`;
+    }
+
+    async function loadMemory() {
+      try {
+        const tree = await fetch(`${API}/api/memory/tree`).then(r => r.json());
+        document.getElementById('memory-content').innerHTML = (tree || []).map(cat =>
+          `<div style="margin-bottom:0.8rem;"><div class="sidebar-title">${cat.title} (${cat.children?.length || 0})</div>` +
+          (cat.children || []).map(f => `<div class="mem-item"><div class="mem-title">${f.title}</div><div class="mem-meta">${f.tokenCount || 0} tokens</div></div>`).join('') +
+          '</div>'
+        ).join('') || '<div style="color:var(--text-dim)">Memory tree empty. Knowledge will accumulate as agents process requests.</div>';
+      } catch { document.getElementById('memory-content').innerHTML = '<div style="color:var(--text-dim)">Memory tree initializing...</div>'; }
+    }
+
+    function switchView(view) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // ─── WebSocket ───
+    function connectWS() {
+      try {
+        const ws = new WebSocket(`ws://${location.hostname}:4200/ws`);
+        ws.onopen = () => addEvent('system', 'Connected to Valley OS');
+        ws.onmessage = (e) => { try { const d = JSON.parse(e.data); if (d.type === 'event') addEvent(d.source || '?', d.type); } catch {} };
+        ws.onclose = () => { addEvent('system', 'Reconnecting...'); setTimeout(connectWS, 3000); };
+      } catch { setTimeout(connectWS, 5000); }
+    }
+
+    // ─── Init ───
+    loadAgents();
+    setInterval(loadAgents, 10000);
+    connectWS();
+    addEvent('system', 'Valley OS Workspace initialized');
   </script>
 </body>
 </html>
