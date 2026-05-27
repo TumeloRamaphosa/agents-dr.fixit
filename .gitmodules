@@ -1,3 +1,6 @@
 [submodule "workspace-ui"]
 	path = workspace-ui
 	url = https://github.com/outsourc-e/hermes-workspace.git
+[submodule "tencent-memory"]
+	path = tencent-memory
+	url = https://github.com/Tencent/TencentDB-Agent-Memory.git

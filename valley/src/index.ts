@@ -270,6 +270,15 @@ const dashboard = Fastify({ logger: false });
 
 async function startDashboard() {
   await dashboard.register(cors, { origin: true });
+
+  // Serve visualizer at /deck
+  await dashboard.register(fastifyStatic, {
+    root: path.join(__dirname, 'visualizer'),
+    prefix: '/deck/',
+    decorateReply: false
+  });
+
+  // Serve dashboard at /
   await dashboard.register(fastifyStatic, {
     root: path.join(__dirname, 'dashboard'),
     prefix: '/'
