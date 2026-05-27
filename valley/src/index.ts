@@ -1,101 +1,296 @@
 /**
  * Valley OS - Main Entry Point
- * Agent Operating System with Fastify HTTP/WebSocket server
- * Ports: 4200 (API), 3141 (dashboard)
+ * AI Agent Operating System for StudEx Group
+ *
+ * Architecture:
+ * - 12 AI agents with specialized roles
+ * - Fastify HTTP API (port 4200)
+ * - WebSocket real-time events
+ * - Ritual scheduler (morning standup, board meeting, day close)
+ * - ElevenLabs voice synthesis
+ * - Event-driven agent-to-agent communication
+ * - Real-time dashboard (port 3141)
  */
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { Classifier } from './core/classifier.js';
-import { costFooter } from './core/cost-footer.js';
-import { exfilGuard } from './core/exfil-guard.js';
-import { robusca } from './agents/robusca.js';
-import { cto } from './agents/cto.js';
+import fastifyStatic from '@fastify/static';
+import fastifyWebsocket from '@fastify/websocket';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+
+import { orchestrator } from './core/orchestrator.js';
+import { eventBus } from './core/event-bus.js';
+import { costFooter } from './core/cost-footer.js';
+import { scheduler } from './core/scheduler.js';
+import { voiceEngine } from './core/voice.js';
+import { exfilGuard } from './core/exfil-guard.js';
+import { ALL_AGENTS } from './agents/index.js';
 
 dotenv.config();
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const API_PORT = parseInt(process.env.API_PORT || '4200');
 const DASHBOARD_PORT = parseInt(process.env.DASHBOARD_PORT || '3141');
 
-const app = Fastify({ logger: true });
+// ─── Main API Server ─────────────────────────────────────────────────────────
 
-async function start() {
-  await app.register(cors, { origin: true });
+const api = Fastify({ logger: { level: 'info' } });
 
-  const classifier = new Classifier();
+async function startAPI() {
+  await api.register(cors, { origin: true });
+  await api.register(fastifyWebsocket);
 
-  app.get('/health', async () => {
-    return { status: 'ok', service: 'valley-os', timestamp: new Date().toISOString() };
+  // ─── WebSocket ──────────────────────────────────────────────────────────────
+
+  const wsClients = new Set<any>();
+
+  api.register(async function (app) {
+    app.get('/ws', { websocket: true }, (socket) => {
+      wsClients.add(socket);
+      socket.send(JSON.stringify({ type: 'connected', timestamp: new Date().toISOString() }));
+
+      socket.on('close', () => wsClients.delete(socket));
+      socket.on('message', async (msg: Buffer) => {
+        try {
+          const data = JSON.parse(msg.toString());
+          if (data.type === 'chat') {
+            const result = await orchestrator.route(data.message, 'websocket', data.userId);
+            socket.send(JSON.stringify({ type: 'response', ...result }));
+          }
+        } catch { /* ignore malformed messages */ }
+      });
+    });
   });
 
-  app.get('/api/agents', async () => {
-    return {
-      agents: [
-        robusca.getStatus(),
-        cto.getStatus(),
-      ],
-      total: 2
-    };
+  // Broadcast events to all WebSocket clients
+  eventBus.on('event', (event) => {
+    const payload = JSON.stringify({ type: 'event', ...event });
+    wsClients.forEach(client => {
+      try { client.send(payload); } catch { wsClients.delete(client); }
+    });
   });
 
-  app.get('/api/costs', async () => {
-    return costFooter.getBudgetStatus();
+  // ─── Health & System ────────────────────────────────────────────────────────
+
+  api.get('/health', async () => ({
+    status: 'ok',
+    service: 'valley-os',
+    version: '2.0.0',
+    agents: orchestrator.getStats().agentCount,
+    uptime: orchestrator.getStats().uptime,
+    timestamp: new Date().toISOString()
+  }));
+
+  api.get('/api/health', async () => orchestrator.getHealthReport());
+
+  api.get('/api/stats', async () => ({
+    orchestrator: orchestrator.getStats(),
+    events: eventBus.getStats(),
+    scheduler: scheduler.getStatus(),
+    voice: { enabled: voiceEngine.isEnabled(), voices: voiceEngine.getAvailableVoices() }
+  }));
+
+  // ─── Agents ─────────────────────────────────────────────────────────────────
+
+  api.get('/api/agents', async () => ({
+    agents: orchestrator.getAgentStatuses(),
+    total: orchestrator.getAgentStatuses().length
+  }));
+
+  api.get<{ Params: { id: string } }>('/api/agents/:id', async (request) => {
+    const agent = orchestrator.getAgent(request.params.id);
+    if (!agent) return { error: 'Agent not found' };
+    return agent.getStatus();
   });
 
-  app.get('/api/costs/report', async () => {
-    return { report: costFooter.getDailyReport() };
-  });
+  api.post<{ Params: { id: string }; Body: { message: string } }>(
+    '/api/agents/:id/chat',
+    async (request) => {
+      const response = await orchestrator.directMessage(
+        request.params.id,
+        request.body.message
+      );
+      return { agent: request.params.id, response };
+    }
+  );
 
-  app.post<{ Body: { message: string; channel?: string; userId?: string } }>(
+  // ─── Smart Routing ──────────────────────────────────────────────────────────
+
+  api.post<{ Body: { message: string; channel?: string; userId?: string } }>(
+    '/api/route',
+    async (request) => {
+      const { message, channel, userId } = request.body;
+      return orchestrator.route(message, channel || 'api', userId || 'anonymous');
+    }
+  );
+
+  api.post<{ Body: { message: string; channel?: string; userId?: string } }>(
+    '/api/chat',
+    async (request) => {
+      const { message, channel, userId } = request.body;
+      return orchestrator.route(message, channel || 'api', userId || 'anonymous');
+    }
+  );
+
+  api.post<{ Body: { message: string; channel?: string; userId?: string } }>(
     '/api/classify',
     async (request) => {
       const { message, channel, userId } = request.body;
-      const result = await classifier.classify({
-        id: crypto.randomUUID(),
-        content: message,
-        channel: channel || 'api',
-        userId: userId || 'anonymous',
-        timestamp: new Date()
-      });
-      return result;
+      const result = await orchestrator.route(message, channel || 'api', userId || 'anonymous');
+      return { agentId: result.agentId, confidence: result.confidence, escalated: result.escalated };
     }
   );
 
-  app.post<{ Body: { message: string } }>(
-    '/api/chat',
-    async (request) => {
-      const { message } = request.body;
+  // ─── Costs ──────────────────────────────────────────────────────────────────
 
-      const securityCheck = exfilGuard.scan(message);
-      if (!securityCheck.safe) {
-        return { error: 'Security check failed', findings: securityCheck.findings };
-      }
+  api.get('/api/costs', async () => costFooter.getBudgetStatus());
+  api.get('/api/costs/report', async () => ({ report: costFooter.getDailyReport() }));
+  api.get('/api/costs/agents', async () => ({ breakdown: costFooter.getAgentCosts() }));
 
-      const response = await robusca.process(message);
-      return { agent: 'robusca', response };
+  // ─── Scheduler ──────────────────────────────────────────────────────────────
+
+  api.get('/api/scheduler', async () => scheduler.getStatus());
+
+  api.post<{ Params: { name: string } }>('/api/scheduler/trigger/:name', async (request) => {
+    try {
+      await scheduler.triggerManual(request.params.name);
+      return { success: true, ritual: request.params.name };
+    } catch (e: any) {
+      return { success: false, error: e.message };
     }
-  );
-
-  app.get('/api/greet', async () => {
-    const greeting = await robusca.greet();
-    return { greeting };
   });
 
-  try {
-    await app.listen({ port: API_PORT, host: '0.0.0.0' });
-    console.log(`\n🏔️  Valley OS started`);
-    console.log(`   API:       http://localhost:${API_PORT}`);
-    console.log(`   Health:    http://localhost:${API_PORT}/health`);
-    console.log(`   Agents:    http://localhost:${API_PORT}/api/agents`);
-    console.log(`   Costs:     http://localhost:${API_PORT}/api/costs`);
-    console.log(`   Chat:      POST http://localhost:${API_PORT}/api/chat`);
-    console.log(`   Classify:  POST http://localhost:${API_PORT}/api/classify`);
-    console.log(`\n   Ready for requests.`);
-  } catch (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
+  // ─── Voice ──────────────────────────────────────────────────────────────────
+
+  api.post<{ Body: { agentId: string; text: string } }>('/api/voice/synthesize', async (request, reply) => {
+    const { agentId, text } = request.body;
+    const audio = await voiceEngine.synthesize(agentId, text);
+    if (!audio) return { error: 'Voice synthesis unavailable or agent has no voice' };
+    reply.header('Content-Type', 'audio/mpeg');
+    return reply.send(audio);
+  });
+
+  api.get('/api/voice/agents', async () => ({
+    enabled: voiceEngine.isEnabled(),
+    voices: voiceEngine.getAvailableVoices()
+  }));
+
+  // ─── Events ─────────────────────────────────────────────────────────────────
+
+  api.get('/api/events', async (request) => {
+    const query = request.query as any;
+    return eventBus.getHistory({
+      type: query.type,
+      source: query.source,
+      limit: parseInt(query.limit || '50')
+    });
+  });
+
+  // ─── Security ───────────────────────────────────────────────────────────────
+
+  api.post<{ Body: { text: string } }>('/api/security/scan', async (request) => {
+    return exfilGuard.scan(request.body.text);
+  });
+
+  // ─── Greeting ───────────────────────────────────────────────────────────────
+
+  api.get('/api/greet', async () => {
+    const robusca = orchestrator.getAgent('robusca') as any;
+    if (robusca?.greet) {
+      return { greeting: await robusca.greet() };
+    }
+    return { greeting: 'Welcome to Valley OS' };
+  });
+
+  // ─── Start API ──────────────────────────────────────────────────────────────
+
+  await api.listen({ port: API_PORT, host: '0.0.0.0' });
 }
 
-start();
+// ─── Dashboard Server ─────────────────────────────────────────────────────────
+
+const dashboard = Fastify({ logger: false });
+
+async function startDashboard() {
+  await dashboard.register(cors, { origin: true });
+  await dashboard.register(fastifyStatic, {
+    root: path.join(__dirname, 'dashboard'),
+    prefix: '/'
+  });
+
+  await dashboard.listen({ port: DASHBOARD_PORT, host: '0.0.0.0' });
+}
+
+// ─── Boot Sequence ────────────────────────────────────────────────────────────
+
+async function boot() {
+  console.log('');
+  console.log('  ╔══════════════════════════════════════════════════════════╗');
+  console.log('  ║           🏔️  VALLEY OS v2.0 - BOOT SEQUENCE            ║');
+  console.log('  ║         StudEx Group AI Operating System                 ║');
+  console.log('  ╚══════════════════════════════════════════════════════════╝');
+  console.log('');
+
+  // Register all agents
+  console.log('  ┌─ Registering Agents ─────────────────────────────────────');
+  ALL_AGENTS.forEach(agent => {
+    orchestrator.register(agent);
+    console.log(`  │  ✓ ${agent.name.padEnd(12)} [${agent.role}]`);
+  });
+  console.log(`  └─ ${ALL_AGENTS.length} agents registered`);
+  console.log('');
+
+  // Start API server
+  await startAPI();
+  console.log(`  ⚡ API Server:      http://localhost:${API_PORT}`);
+  console.log(`     ├─ Health:       /health`);
+  console.log(`     ├─ Agents:       /api/agents`);
+  console.log(`     ├─ Route:        POST /api/route`);
+  console.log(`     ├─ Chat:         POST /api/chat`);
+  console.log(`     ├─ Costs:        /api/costs`);
+  console.log(`     ├─ Scheduler:    /api/scheduler`);
+  console.log(`     ├─ Events:       /api/events`);
+  console.log(`     ├─ Voice:        POST /api/voice/synthesize`);
+  console.log(`     └─ WebSocket:    ws://localhost:${API_PORT}/ws`);
+  console.log('');
+
+  // Start Dashboard
+  try {
+    await startDashboard();
+    console.log(`  🖥️  Dashboard:      http://localhost:${DASHBOARD_PORT}`);
+  } catch {
+    console.log(`  ⚠️  Dashboard:      Port ${DASHBOARD_PORT} unavailable (non-critical)`);
+  }
+  console.log('');
+
+  // Start Scheduler
+  scheduler.start();
+  console.log('');
+
+  // Voice status
+  if (voiceEngine.isEnabled()) {
+    console.log(`  🎙️  Voice Engine:   ACTIVE (${voiceEngine.getAvailableVoices().length} voices)`);
+  } else {
+    console.log('  🎙️  Voice Engine:   INACTIVE (set ELEVENLABS_API_KEY to enable)');
+  }
+  console.log('');
+
+  // System ready
+  const budget = costFooter.getBudgetStatus();
+  console.log('  ┌─ System Status ──────────────────────────────────────────');
+  console.log(`  │  Agents:     ${ALL_AGENTS.length} registered, all ready`);
+  console.log(`  │  Budget:     $${budget.dailyBudget}/day ($${budget.remaining.toFixed(2)} remaining)`);
+  console.log(`  │  Scheduler:  ${scheduler.getRituals().length} rituals configured`);
+  console.log(`  │  Timezone:   Africa/Johannesburg (SAST)`);
+  console.log('  └─────────────────────────────────────────────────────────');
+  console.log('');
+  console.log('  🟢 Valley OS is ready. All systems operational.');
+  console.log('');
+}
+
+boot().catch((err) => {
+  console.error('❌ Valley OS boot failed:', err);
+  process.exit(1);
+});

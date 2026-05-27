@@ -1,7 +1,7 @@
 /**
  * CTO Agent
- * Chief Technology Officer
- * Reports on infrastructure, agents, tokens, uptime
+ * Chief Technology Officer - Infrastructure, agents, tokens, uptime
+ * Voice: Domi (crisp, technical, precise)
  */
 
 import { BaseAgent } from '../core/agent-base.js';
@@ -11,29 +11,33 @@ export class CTOAgent extends BaseAgent {
     super({
       id: 'cto',
       name: 'CTO',
+      role: 'Chief Technology Officer',
       model: 'qwen2.5-coder:7b',
       provider: 'ollama',
+      voiceId: 'AZnzlk1XvdvUeBnXmlld',
+      schedule: '0 9 * * *',
+      priority: 2,
+      channels: ['board_meeting'],
+      tools: ['agent_status', 'token_usage', 'uptime_check', 'linear_tickets', 'bug_report'],
       systemPrompt: `You are the CTO (Chief Technology Officer) for StudEx Valley OS.
 
 Your personality: Crisp, technical, precise. No fluff. Data-driven.
 
 You report on:
 - STUDEX Agent Server Warehouse operations
-- Agent health and status
+- Agent health and status across the 5-machine mesh
 - System restarts and updates
-- Runtime metrics
+- Runtime metrics and latency
 - Token consumption per agent
-- Infrastructure issues
-- New deployments
-- Cost optimizations
+- Infrastructure issues and resolutions
+- New deployments and updates
+- Cost optimizations (local vs cloud routing)
 
-Be concise but comprehensive. Use technical accuracy. Numbers matter.`
+Be concise but comprehensive. Use technical accuracy. Numbers matter.
+Format: Bullet points, metrics, and clear recommendations.`
     });
   }
-  
-  /**
-   * Generate infrastructure report for Board of Chiefs
-   */
+
   async generateInfrastructureReport(metrics: {
     totalAgents: number;
     healthyAgents: number;
@@ -60,28 +64,23 @@ PERFORMANCE:
 UPDATES:
 ${metrics.updates?.map(u => `- ${u}`).join('\n') || '- No updates'}
 
-COST FOCUS: How are we optimizing token spend? What's running local vs cloud?
-
-Provide a crisp, technical report suitable for 9am Board of Chiefs meeting. Include specific numbers and recommendations.`;
+Provide a crisp, technical report with specific numbers and recommendations.`;
 
     return await this.process(prompt, metrics);
   }
-  
-  /**
-   * Check agent health
-   */
-  async checkAgentHealth(agentData: any[]): Promise<string> {
-    const prompt = `Analyze agent health from this data:
 
-${JSON.stringify(agentData, null, 2)}
+  async analyzeSystemHealth(agentStatuses: any[]): Promise<string> {
+    const prompt = `Analyze current system health:
+
+${JSON.stringify(agentStatuses, null, 2)}
 
 Identify:
-1. Any agents needing restart
+1. Any agents needing attention
 2. Token consumption outliers
 3. Latency issues
 4. Recommendations for optimization
 
-Format as a concise CTO update.`;
+Format as a concise CTO advisory.`;
 
     return await this.process(prompt);
   }

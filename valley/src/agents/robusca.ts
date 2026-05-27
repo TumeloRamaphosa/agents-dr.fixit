@@ -1,20 +1,24 @@
 /**
  * Robusca Agent
- * Daily 08:00 SAST standup host
- * Greets you, coordinates all activities
- * 09:00 Board of Chiefs moderator
+ * Daily 08:00 SAST standup host & Board of Chiefs moderator
+ * Voice: Charlotte (warm, calm, South African English accent)
  */
 
 import { BaseAgent } from '../core/agent-base.js';
-import { costFooter } from '../core/cost-footer.js';
 
 export class RobuscaAgent extends BaseAgent {
   constructor() {
     super({
       id: 'robusca',
       name: 'Robusca',
+      role: 'Daily Standup Host',
       model: 'qwen2.5:7b',
       provider: 'ollama',
+      voiceId: 'XB0fDUnXU5powFXDhCwa',
+      schedule: '0 8 * * *',
+      priority: 1,
+      channels: ['telegram', 'voice'],
+      tools: ['memory_read', 'memory_write', 'schedule_check', 'cost_query', 'sales_fetch', 'social_fetch'],
       systemPrompt: `You are Robusca, the daily standup host for StudEx Valley OS.
 
 Your personality: Warm, calm, South African English accent. You greet with energy and enthusiasm.
@@ -29,21 +33,16 @@ Your daily 08:00 SAST routine:
 7. Today's plan and priorities
 
 Keep responses conversational but structured. Use South African English expressions naturally.
-
 When something goes wrong, be reassuring but honest. Always end with encouragement.
-
 Format: Use emojis to make things visual. Keep paragraphs short and punchy.`
     });
   }
-  
-  /**
-   * Run morning standup (08:00 SAST)
-   */
+
   async runMorningStandup(context: {
-    sales: any;
-    social: any;
-    costs: any;
-    yesterdayTasks: string[];
+    sales?: any;
+    social?: any;
+    costs?: any;
+    yesterdayTasks?: string[];
   }): Promise<string> {
     const prompt = `Good morning! It's ${new Date().toLocaleDateString('en-ZA')}.
 
@@ -71,10 +70,7 @@ Generate an enthusiastic but professional standup report with greetings, updates
 
     return await this.process(prompt, context);
   }
-  
-  /**
-   * Moderate Board of Chiefs meeting (09:00 SAST)
-   */
+
   async moderateBoardMeeting(
     reports: Array<{ agent: string; report: string }>
   ): Promise<string> {
@@ -85,20 +81,17 @@ Agents reporting in order:
 ${reports.map(r => `=== ${r.agent} ===\n${r.report}`).join('\n\n')}
 
 As moderator:
-1. Thank each agent for their report (30 seconds per agent)
+1. Thank each agent for their report
 2. Summarize key points
 3. Identify any blockers or issues
 4. Announce next steps
 5. Close with encouragement
 
-Keep it professional, efficient, and motivating. Total meeting should feel under 45 minutes.`;
+Keep it professional, efficient, and motivating.`;
 
     return await this.process(prompt);
   }
-  
-  /**
-   * Day close report (23:00 SAST)
-   */
+
   async runDayClose(metrics: {
     tokenSpend: number;
     agentRuntime: number;
@@ -111,33 +104,28 @@ METRICS:
 - Total agent runtime: ${metrics.agentRuntime} hours
 - Distance to break-even: R${metrics.costToBreakeven}
 
-Write a concise but warm closing message acknowledging today's work, the costs, and setting up for tomorrow.`;
+Write a concise but warm closing message acknowledging today's work.`;
 
     return await this.process(prompt, metrics);
   }
-  
-  /**
-   * Greeting for new conversation
-   */
+
   async greet(userName?: string): Promise<string> {
     const hour = new Date().getHours();
     let greeting = 'Hello';
-    
     if (hour < 12) greeting = 'Good morning';
     else if (hour < 17) greeting = 'Good afternoon';
     else greeting = 'Good evening';
-    
+
     return `${greeting}${userName ? ` ${userName}` : ''}! 👋 I'm Robusca, your daily standup coordinator for StudEx Valley OS.
 
 Here's what's on deck for today:
 - 🕗 08:00 - Morning standup & yesterday's review
 - 🕘 09:00 - Board of Chiefs meeting
 - 📊 Throughout - Sales tracking, social monitoring, cost tracking
-- 🕚 23:00 - Day close & tomorrows prep
+- 🕚 23:00 - Day close & tomorrow's prep
 
 How can I help you right now?`;
   }
 }
 
-// Export singleton
 export const robusca = new RobuscaAgent();

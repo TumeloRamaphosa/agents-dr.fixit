@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valley OS - Command Center</title>
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-dim: #8B7535;
+      --obsidian: #0D0D0D;
+      --dark: #1A1A1A;
+      --card: #222222;
+      --text: #E8E8E8;
+      --text-dim: #888888;
+      --green: #4CAF50;
+      --red: #F44336;
+      --orange: #FF9800;
+      --blue: #2196F3;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      background: var(--obsidian);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--obsidian) 100%);
+      border-bottom: 1px solid var(--gold-dim);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo h1 {
+      font-size: 1.4rem;
+      color: var(--gold);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .logo .version {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      background: var(--card);
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .status-item { display: flex; align-items: center; gap: 0.4rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-dot.orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+    .status-dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto 1fr;
+      gap: 1rem;
+      padding: 1.5rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.2rem;
+      transition: border-color 0.3s;
+    }
+    .card:hover { border-color: var(--gold-dim); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid #333;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .metrics {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+
+    .metric {
+      background: var(--card);
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin: 0.3rem 0;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .agents-grid {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem;
+    }
+
+    .agent-card {
+      background: var(--card);
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .agent-card:hover { border-color: var(--gold); transform: translateY(-1px); }
+    .agent-card.active { border-color: var(--green); }
+    .agent-card.error { border-color: var(--red); }
+
+    .agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--obsidian);
+      flex-shrink: 0;
+    }
+
+    .agent-info { flex: 1; min-width: 0; }
+    .agent-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .agent-role { font-size: 0.65rem; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .agent-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .event-log {
+      grid-column: 1 / 3;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .event-list { list-style: none; }
+    .event-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 0.75rem;
+      display: flex;
+      gap: 0.7rem;
+    }
+    .event-time { color: var(--text-dim); flex-shrink: 0; width: 60px; }
+    .event-source { color: var(--gold); flex-shrink: 0; width: 80px; }
+    .event-content { color: var(--text); flex: 1; }
+
+    .chat-panel {
+      grid-column: 3;
+      display: flex;
+      flex-direction: column;
+      max-height: 400px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem 0;
+    }
+
+    .chat-msg {
+      margin-bottom: 0.8rem;
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+    .chat-msg .sender { color: var(--gold); font-weight: 600; }
+    .chat-msg .text { color: var(--text); margin-top: 0.2rem; }
+
+    .chat-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+
+    .chat-input input {
+      flex: 1;
+      background: var(--obsidian);
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 0.6rem 0.8rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+    .chat-input input:focus { outline: none; border-color: var(--gold); }
+
+    .chat-input button {
+      background: var(--gold);
+      color: var(--obsidian);
+      border: none;
+      border-radius: 4px;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+    .chat-input button:hover { background: var(--gold-dim); }
+
+    .schedule-list { list-style: none; }
+    .schedule-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+    .schedule-time { color: var(--gold); font-weight: 600; }
+    .schedule-name { color: var(--text); }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .pulse { animation: pulse 2s infinite; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <h1>🏔️ VALLEY OS</h1>
+      <span class="version">v2.0</span>
+    </div>
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-dot green" id="ws-status"></span>
+        <span id="ws-label">Connected</span>
+      </div>
+      <div class="status-item">
+        <span id="uptime">0h 0m</span>
+      </div>
+      <div class="status-item">
+        <span id="clock"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="metrics" id="metrics">
+      <div class="metric">
+        <div class="metric-label">Agents Online</div>
+        <div class="metric-value" id="m-agents">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Requests Today</div>
+        <div class="metric-value" id="m-requests">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Budget Used</div>
+        <div class="metric-value" id="m-budget">0%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Avg Latency</div>
+        <div class="metric-value" id="m-latency">0ms</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Uptime</div>
+        <div class="metric-value" id="m-uptime">0h</div>
+      </div>
+    </div>
+
+    <div class="agents-grid" id="agents-grid"></div>
+
+    <div class="card event-log">
+      <div class="card-header">
+        <span class="card-title">Event Stream</span>
+        <span class="card-title" style="color: var(--text-dim); font-size: 0.65rem;">LIVE</span>
+      </div>
+      <ul class="event-list" id="event-list"></ul>
+    </div>
+
+    <div class="card chat-panel">
+      <div class="card-header">
+        <span class="card-title">Command Interface</span>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Message any agent..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.hostname === 'localhost'
+      ? 'http://localhost:4200'
+      : `${window.location.protocol}//${window.location.hostname}:4200`;
+    let ws = null;
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString('en-ZA', { timeZone: 'Africa/Johannesburg' }) + ' SAST';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function fetchData() {
+      try {
+        const [agents, costs, health] = await Promise.all([
+          fetch(`${API_BASE}/api/agents`).then(r => r.json()),
+          fetch(`${API_BASE}/api/costs`).then(r => r.json()),
+          fetch(`${API_BASE}/api/health`).then(r => r.json()).catch(() => null)
+        ]);
+
+        // Update metrics
+        const ready = agents.agents?.filter(a => a.status === 'ready').length || 0;
+        document.getElementById('m-agents').textContent = `${ready}/${agents.total || 0}`;
+        document.getElementById('m-budget').textContent = `${costs.percentUsed?.toFixed(1) || 0}%`;
+
+        if (health) {
+          document.getElementById('m-requests').textContent = health.totalRequests || '0';
+          const uptimeH = Math.floor((health.uptime || 0) / 3600000);
+          document.getElementById('m-uptime').textContent = `${uptimeH}h`;
+          document.getElementById('uptime').textContent = `Up: ${uptimeH}h`;
+        }
+
+        // Render agents
+        renderAgents(agents.agents || []);
+      } catch (e) {
+        console.error('Fetch error:', e);
+      }
+    }
+
+    function renderAgents(agents) {
+      const grid = document.getElementById('agents-grid');
+      grid.innerHTML = agents.map(a => `
+        <div class="agent-card ${a.status === 'ready' ? 'active' : a.status === 'error' ? 'error' : ''}" onclick="chatAgent('${a.id}')">
+          <div class="agent-avatar">${a.name.slice(0, 2).toUpperCase()}</div>
+          <div class="agent-info">
+            <div class="agent-name">${a.name}</div>
+            <div class="agent-role">${a.role || a.id}</div>
+          </div>
+          <div class="agent-status status-dot ${a.status === 'ready' ? 'green' : a.status === 'error' ? 'red' : 'orange'}"></div>
+        </div>
+      `).join('');
+    }
+
+    function addEvent(source, content) {
+      const list = document.getElementById('event-list');
+      const time = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+      const item = document.createElement('li');
+      item.className = 'event-item';
+      item.innerHTML = `<span class="event-time">${time}</span><span class="event-source">${source}</span><span class="event-content">${content}</span>`;
+      list.prepend(item);
+      if (list.children.length > 50) list.lastChild.remove();
+    }
+
+    function addChatMessage(sender, text) {
+      const msgs = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'chat-msg';
+      div.innerHTML = `<div class="sender">${sender}</div><div class="text">${text}</div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message) return;
+      input.value = '';
+
+      addChatMessage('You', message);
+      addEvent('user', message.slice(0, 60));
+
+      try {
+        const res = await fetch(`${API_BASE}/api/route`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        addChatMessage(data.agentName || 'System', data.response || data.error || 'No response');
+        addEvent(data.agentId || 'system', `Responded (${data.latencyMs}ms)`);
+      } catch (e) {
+        addChatMessage('System', 'Error connecting to Valley OS API');
+      }
+    }
+
+    function chatAgent(agentId) {
+      const input = document.getElementById('chat-input');
+      input.value = `@${agentId} `;
+      input.focus();
+    }
+
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function connectWebSocket() {
+      try {
+        ws = new WebSocket(`ws://${window.location.hostname}:4200/ws`);
+        ws.onopen = () => {
+          document.getElementById('ws-status').className = 'status-dot green';
+          document.getElementById('ws-label').textContent = 'Connected';
+          addEvent('system', 'WebSocket connected');
+        };
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'event') addEvent(data.source || 'system', data.payload?.toString()?.slice(0, 80) || data.type);
+        };
+        ws.onclose = () => {
+          document.getElementById('ws-status').className = 'status-dot orange';
+          document.getElementById('ws-label').textContent = 'Reconnecting...';
+          setTimeout(connectWebSocket, 3000);
+        };
+      } catch {
+        setTimeout(connectWebSocket, 5000);
+      }
+    }
+
+    // Initial load
+    fetchData();
+    setInterval(fetchData, 5000);
+    connectWebSocket();
+    addEvent('system', 'Valley OS Dashboard initialized');
+  </script>
+</body>
+</html>

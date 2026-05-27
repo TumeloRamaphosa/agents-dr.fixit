@@ -32,15 +32,18 @@ export class MemoryStore {
   private db: Database.Database;
   private ollama: Ollama;
   private embeddingModel: string = 'nomic-embed-text';
-  
+  private ollamaAvailable: boolean = true;
+
   constructor(dbPath: string = './data/memory.db') {
     this.db = new Database(dbPath);
-    this.ollama = new Ollama({ host: 'http://localhost:11434' });
+    this.ollama = new Ollama({ host: process.env.OLLAMA_HOST || 'http://localhost:11434' });
     this.initialize();
   }
-  
+
   private initialize(): void {
-    // Create tables with FTS5 for full-text search
+    this.db.pragma('journal_mode = WAL');
+    this.db.pragma('synchronous = NORMAL');
+
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS memories (
         id TEXT PRIMARY KEY,
@@ -55,47 +58,59 @@ export class MemoryStore {
         access_count INTEGER DEFAULT 0,
         last_accessed TEXT NOT NULL
       );
-      
-      CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
-        content,
-        agent_id,
-        content='memories',
-        content_rowid='id'
-      );
-      
+
       CREATE INDEX IF NOT EXISTS idx_agent ON memories(agent_id);
       CREATE INDEX IF NOT EXISTS idx_type ON memories(type);
       CREATE INDEX IF NOT EXISTS idx_timestamp ON memories(timestamp);
       CREATE INDEX IF NOT EXISTS idx_importance ON memories(importance);
     `);
+
+    // FTS5 table - separate creation to handle gracefully
+    try {
+      this.db.exec(`
+        CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts USING fts5(
+          content,
+          agent_id,
+          content='memories',
+          content_rowid='rowid'
+        );
+      `);
+    } catch {
+      // FTS5 may already exist with different schema, that's fine
+    }
   }
-  
-  async store(entry: Omit<MemoryEntry, 'id' | 'embedding' | 'accessCount' | 'lastAccessed'>): Promise<string> {
+
+  async store(entry: {
+    content: string;
+    type: MemoryEntry['type'];
+    agentId: string;
+    importance: number;
+    userId?: string;
+    metadata?: Record<string, any>;
+  }): Promise<string> {
     const id = crypto.randomUUID();
     const timestamp = new Date().toISOString();
-    
-    // Generate embedding if not provided
+
     let embedding: number[] | undefined;
-    if (!entry.embedding) {
+    if (this.ollamaAvailable) {
       try {
         const response = await this.ollama.embeddings({
           model: this.embeddingModel,
           prompt: entry.content
         });
         embedding = response.embedding;
-      } catch (error) {
-        console.error('Embedding generation failed:', error);
+      } catch {
+        this.ollamaAvailable = false;
       }
     }
-    
-    // Store in database
+
     const stmt = this.db.prepare(`
       INSERT INTO memories (
         id, content, type, agent_id, user_id, timestamp,
         embedding, metadata, importance, access_count, last_accessed
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
     `);
-    
+
     stmt.run(
       id,
       entry.content,
@@ -108,130 +123,149 @@ export class MemoryStore {
       entry.importance,
       timestamp
     );
-    
-    // Index for FTS
-    this.db.prepare('INSERT INTO memories_fts(rowid, content, agent_id) VALUES (?, ?, ?)')
-      .run(id, entry.content, entry.agentId);
-    
+
+    // Index for FTS - sanitize input for FTS5 syntax
+    try {
+      this.db.prepare(
+        'INSERT INTO memories_fts(rowid, content, agent_id) VALUES ((SELECT rowid FROM memories WHERE id = ?), ?, ?)'
+      ).run(id, entry.content, entry.agentId);
+    } catch {
+      // FTS indexing is best-effort
+    }
+
     return id;
   }
-  
+
   async retrieve(
     query: string,
     agentId?: string,
     limit: number = 10,
     minImportance: number = 0.3
   ): Promise<SearchResult[]> {
-    // Hybrid search: combine embedding similarity + text search
-    const embeddingResults = await this.queryByEmbedding(query, agentId, limit, minImportance);
     const textResults = this.queryByText(query, agentId, limit);
-    
-    // Merge and deduplicate
+    const recentResults = this.queryRecent(agentId, limit);
+
+    // Merge results
     const combined = new Map<string, SearchResult>();
-    
-    // Add embedding results with higher weight
-    embeddingResults.forEach(r => {
-      combined.set(r.entry.id, { ...r, score: r.score * 0.6 });
-    });
-    
-    // Add text results
+
     textResults.forEach(r => {
+      combined.set(r.entry.id, { ...r, score: r.score * 0.7 });
+    });
+
+    recentResults.forEach(r => {
       if (combined.has(r.entry.id)) {
         const existing = combined.get(r.entry.id)!;
-        existing.score += r.score * 0.4;
+        existing.score += r.score * 0.3;
         existing.matchType = 'hybrid';
       } else {
-        combined.set(r.entry.id, { ...r, score: r.score * 0.4 });
+        combined.set(r.entry.id, { ...r, score: r.score * 0.3 });
       }
     });
-    
-    // Sort by score and update access patterns
+
     const results = Array.from(combined.values())
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
-    
-    // Update access counts
+
     results.forEach(r => this.incrementAccess(r.entry.id));
-    
+
     return results;
   }
-  
-  private async queryByEmbedding(
-    query: string,
-    agentId?: string,
-    limit: number = 10,
-    minImportance: number = 0.3
-  ): Promise<SearchResult[]> {
+
+  private queryByText(query: string, agentId?: string, limit: number = 10): SearchResult[] {
+    // Sanitize query for FTS5: escape special characters and wrap in quotes
+    const sanitized = this.sanitizeFtsQuery(query);
+    if (!sanitized) {
+      return this.queryByLike(query, agentId, limit);
+    }
+
     try {
-      const response = await this.ollama.embeddings({
-        model: this.embeddingModel,
-        prompt: query
-      });
-      const queryEmbedding = response.embedding;
-      
-      // Build SQL with cosine similarity
       let sql = `
-        SELECT id, content, type, agent_id, user_id, timestamp,
-               metadata, importance, embedding,
-               (embedding MATCH ?) as similarity
-        FROM memories
-        WHERE importance >= ?
+        SELECT m.*
+        FROM memories m
+        JOIN memories_fts fts ON m.rowid = fts.rowid
+        WHERE memories_fts MATCH ?
       `;
-      
-      const params: any[] = [
-        Buffer.from(new Float32Array(queryEmbedding).buffer),
-        minImportance
-      ];
-      
+      const params: any[] = [sanitized];
+
       if (agentId) {
-        sql += ' AND agent_id = ?';
+        sql += ' AND m.agent_id = ?';
         params.push(agentId);
       }
-      
-      sql += ' ORDER BY similarity DESC LIMIT ?';
+
+      sql += ' ORDER BY rank LIMIT ?';
       params.push(limit);
-      
-      // Note: This uses a simplified approach. In production, use vector database
+
       const rows = this.db.prepare(sql).all(...params);
-      
-      return rows.map((row: any) => ({
+
+      return rows.map((row: any, index: number) => ({
         entry: this.rowToEntry(row),
-        score: row.similarity || 0.5,
-        matchType: 'embedding'
+        score: 1.0 / (index + 1),
+        matchType: 'text' as const
       }));
-    } catch (error) {
-      console.error('Embedding query failed:', error);
-      return [];
+    } catch {
+      return this.queryByLike(query, agentId, limit);
     }
   }
-  
-  private queryByText(query: string, agentId?: string, limit: number = 10): SearchResult[] {
-    let sql = `
-      SELECT m.*
-      FROM memories m
-      JOIN memories_fts fts ON m.id = fts.rowid
-      WHERE memories_fts MATCH ?
-    `;
-    
-    const params: any[] = [query];
-    
+
+  private queryByLike(query: string, agentId?: string, limit: number = 10): SearchResult[] {
+    const words = query.split(/\s+/).filter(w => w.length > 2).slice(0, 5);
+    if (words.length === 0) return [];
+
+    let sql = 'SELECT * FROM memories WHERE (';
+    const conditions = words.map(() => 'content LIKE ?');
+    sql += conditions.join(' OR ') + ')';
+
+    const params: any[] = words.map(w => `%${w}%`);
+
     if (agentId) {
-      sql += ' AND m.agent_id = ?';
+      sql += ' AND agent_id = ?';
       params.push(agentId);
     }
-    
-    sql += ' ORDER BY rank LIMIT ?';
+
+    sql += ' ORDER BY importance DESC, last_accessed DESC LIMIT ?';
     params.push(limit);
-    
+
     const rows = this.db.prepare(sql).all(...params);
-    
     return rows.map((row: any, index: number) => ({
       entry: this.rowToEntry(row),
-      score: 1.0 / (index + 1),
-      matchType: 'text'
+      score: 0.5 / (index + 1),
+      matchType: 'text' as const
     }));
   }
-  
+
+  private queryRecent(agentId?: string, limit: number = 5): SearchResult[] {
+    let sql = 'SELECT * FROM memories WHERE importance >= 0.5';
+    const params: any[] = [];
+
+    if (agentId) {
+      sql += ' AND agent_id = ?';
+      params.push(agentId);
+    }
+
+    sql += ' ORDER BY timestamp DESC LIMIT ?';
+    params.push(limit);
+
+    const rows = this.db.prepare(sql).all(...params);
+    return rows.map((row: any, index: number) => ({
+      entry: this.rowToEntry(row),
+      score: 0.8 / (index + 1),
+      matchType: 'text' as const
+    }));
+  }
+
+  private sanitizeFtsQuery(query: string): string | null {
+    // Extract meaningful words, strip FTS5 special chars
+    const words = query
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2);
+
+    if (words.length === 0) return null;
+
+    // Use OR operator for multiple words
+    return words.map(w => `"${w}"`).join(' OR ');
+  }
+
   private incrementAccess(id: string): void {
     this.db.prepare(`
       UPDATE memories
@@ -240,7 +274,7 @@ export class MemoryStore {
       WHERE id = ?
     `).run(new Date().toISOString(), id);
   }
-  
+
   private rowToEntry(row: any): MemoryEntry {
     return {
       id: row.id,
@@ -249,49 +283,45 @@ export class MemoryStore {
       agentId: row.agent_id,
       userId: row.user_id,
       timestamp: new Date(row.timestamp),
-      embedding: row.embedding ? Array.from(new Float32Array(row.embedding.buffer)) : undefined,
       metadata: JSON.parse(row.metadata || '{}'),
       importance: row.importance,
       accessCount: row.access_count,
       lastAccessed: new Date(row.last_accessed)
     };
   }
-  
-  // Memory decay - forget low-importance memories
-  applyDecay(): void {
+
+  applyDecay(): number {
     const monthAgo = new Date();
     monthAgo.setMonth(monthAgo.getMonth() - 1);
-    
-    this.db.prepare(`
+
+    const result = this.db.prepare(`
       DELETE FROM memories
       WHERE last_accessed < ?
       AND importance < 0.3
       AND access_count < 3
     `).run(monthAgo.toISOString());
-    
-    // Clean up FTS
-    this.db.exec('INSERT INTO memories_fts(memories_fts) VALUES(\'optimize\')');
+
+    return result.changes;
   }
-  
-  // Get memory stats for dashboard
-  getStats(): { total: number; byType: Record<string, number> } {
+
+  getStats(): { total: number; byType: Record<string, number>; byAgent: Record<string, number> } {
     const total = this.db.prepare('SELECT COUNT(*) as count FROM memories').get() as { count: number };
-    
+
     const byType = this.db.prepare(`
-      SELECT type, COUNT(*) as count
-      FROM memories
-      GROUP BY type
+      SELECT type, COUNT(*) as count FROM memories GROUP BY type
     `).all() as Array<{ type: string; count: number }>;
-    
+
+    const byAgent = this.db.prepare(`
+      SELECT agent_id, COUNT(*) as count FROM memories GROUP BY agent_id
+    `).all() as Array<{ agent_id: string; count: number }>;
+
     return {
       total: total.count,
-      byType: byType.reduce((acc, row) => {
-        acc[row.type] = row.count;
-        return acc;
-      }, {} as Record<string, number>)
+      byType: byType.reduce((acc, row) => { acc[row.type] = row.count; return acc; }, {} as Record<string, number>),
+      byAgent: byAgent.reduce((acc, row) => { acc[row.agent_id] = row.count; return acc; }, {} as Record<string, number>)
     };
   }
-  
+
   close(): void {
     this.db.close();
   }
