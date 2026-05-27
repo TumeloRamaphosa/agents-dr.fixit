@@ -74,18 +74,16 @@ export class MemoryStore {
     const id = crypto.randomUUID();
     const timestamp = new Date().toISOString();
     
-    // Generate embedding if not provided
+    // Generate embedding
     let embedding: number[] | undefined;
-    if (!entry.embedding) {
-      try {
-        const response = await this.ollama.embeddings({
-          model: this.embeddingModel,
-          prompt: entry.content
-        });
-        embedding = response.embedding;
-      } catch (error) {
-        console.error('Embedding generation failed:', error);
-      }
+    try {
+      const response = await this.ollama.embeddings({
+        model: this.embeddingModel,
+        prompt: entry.content
+      });
+      embedding = response.embedding;
+    } catch (error) {
+      console.error('Embedding generation failed:', error);
     }
     
     // Store in database
