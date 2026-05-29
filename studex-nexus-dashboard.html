@@ -1506,7 +1506,7 @@
                 </div>
                 <div class="integration-details" style="display: block;">
                     <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6;">
-                        Deploy <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">infra/fly/studex-command-plane</code> and paste the HTTPS origin here (no trailing slash). The API key stays on Fly as a secret; this page only calls <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">/health</code> and <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">/api/sandboxes</code>.
+                        Deploy <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">infra/fly/studex-command-plane</code> and paste the HTTPS origin here (no trailing slash). This page calls <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">/health</code> and <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">/api/inventory</code> (Daytona sandboxes + Fly VMs).
                     </p>
                     <label style="display:block;color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.35rem;">Command API base URL</label>
                     <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
@@ -1515,6 +1515,20 @@
                     </div>
                     <p id="cp-api-status" style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;"></p>
                     <div id="cp-sandbox-list" style="margin-top:1rem;"></div>
+                    <div id="cp-fly-list" style="margin-top:1rem;"></div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: var(--gold);">Super Agents</span>
+                    <span class="integration-status connected">Hermes cloud</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Fly app</span><span>super-agents</span></div>
+                    <div class="integration-detail"><span>API</span><span><code style="font-size:0.75rem;">infra/fly/super-agents-api</code></span></div>
+                    <div class="integration-detail"><span>LLM</span><span>Xiaomi MiMo (secret on Fly)</span></div>
+                    <div class="integration-detail"><span>Daytona VM</span><span>Super Agents sandbox</span></div>
                 </div>
             </div>
 
@@ -1714,37 +1728,57 @@
             }
         }
 
+        function renderInventoryList(title, itemsHtml) {
+            return '<p style="color:var(--gold);font-family:\'Bebas Neue\',sans-serif;letter-spacing:1px;margin:0.75rem 0 0.35rem;">' + title + '</p><ul style="list-style:none;padding:0;">' + itemsHtml + '</ul>';
+        }
+
         async function refreshCommandPlane() {
             const statusEl = document.getElementById('cp-api-status');
             const listEl = document.getElementById('cp-sandbox-list');
+            const flyEl = document.getElementById('cp-fly-list');
             if (!statusEl || !listEl) return;
 
             const base = loadCommandApiBase();
             if (!base) {
                 statusEl.textContent = 'Set your Fly.io Studex Command Plane URL, then Save & Refresh.';
                 listEl.innerHTML = '';
+                if (flyEl) flyEl.innerHTML = '';
                 return;
             }
             statusEl.textContent = 'Loading…';
             listEl.innerHTML = '';
+            if (flyEl) flyEl.innerHTML = '';
             try {
                 const h = await fetch(base + '/health');
                 const hj = await h.json();
                 statusEl.textContent = 'Health: ' + JSON.stringify(hj);
 
-                const s = await fetch(base + '/api/sandboxes');
-                const sj = await s.json();
-                if (!sj.configured) {
-                    listEl.innerHTML = '<p style="color:var(--text-secondary)">' + (sj.message || 'Daytona not configured on API.') + '</p>';
-                    return;
+                const inv = await fetch(base + '/api/inventory');
+                const data = await inv.json();
+                const daytona = data.daytona || {};
+                const fly = data.fly || {};
+
+                if (!daytona.configured) {
+                    listEl.innerHTML = '<p style="color:var(--text-secondary)">' + (daytona.message || 'Daytona not configured.') + '</p>';
+                } else if (!daytona.sandboxes || !daytona.sandboxes.length) {
+                    listEl.innerHTML = '<p style="color:var(--text-secondary)">No Daytona sandboxes.</p>';
+                } else {
+                    listEl.innerHTML = renderInventoryList('Daytona sandboxes', daytona.sandboxes.map(function (b) {
+                        return '<li style="margin:0.5rem 0;padding:0.75rem;background:var(--obsidian-lighter);border-radius:8px;border:1px solid rgba(201,168,76,0.15);"><strong style="color:var(--gold);">' + (b.name || b.id) + '</strong> <span style="color:var(--text-secondary)">' + (b.state || '') + '</span><br><small style="color:var(--gold-dim);word-break:break-all;">' + b.id + '</small></li>';
+                    }).join(''));
                 }
-                if (!sj.sandboxes || !sj.sandboxes.length) {
-                    listEl.innerHTML = '<p style="color:var(--text-secondary)">No sandboxes returned.</p>';
-                    return;
+
+                if (flyEl) {
+                    if (!fly.configured) {
+                        flyEl.innerHTML = '<p style="color:var(--text-secondary)">' + (fly.message || 'Fly inventory not configured (set FLY_API_TOKEN on command plane).') + '</p>';
+                    } else if (!fly.apps || !fly.apps.length) {
+                        flyEl.innerHTML = '<p style="color:var(--text-secondary)">No Fly apps listed.</p>';
+                    } else {
+                        flyEl.innerHTML = renderInventoryList('Fly.io apps / VMs', fly.apps.map(function (a) {
+                            return '<li style="margin:0.5rem 0;padding:0.75rem;background:var(--obsidian-lighter);border-radius:8px;border:1px solid rgba(201,168,76,0.15);"><strong style="color:var(--gold);">' + a.name + '</strong> <span style="color:var(--text-secondary)">' + (a.status || '') + '</span><br><small><a href="' + (a.hostname || '#') + '" target="_blank" rel="noopener" style="color:var(--gold);">' + (a.hostname || '') + '</a></small></li>';
+                        }).join(''));
+                    }
                 }
-                listEl.innerHTML = '<ul style="list-style:none;padding:0;">' + sj.sandboxes.map(function (b) {
-                    return '<li style="margin:0.5rem 0;padding:0.75rem;background:var(--obsidian-lighter);border-radius:8px;border:1px solid rgba(201,168,76,0.15);"><strong style="color:var(--gold);">' + (b.name || b.id) + '</strong> <span style="color:var(--text-secondary)">' + (b.state || '') + '</span><br><small style="color:var(--gold-dim);word-break:break-all;">' + b.id + '</small></li>';
-                }).join('') + '</ul>';
             } catch (e) {
                 statusEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e));
             }

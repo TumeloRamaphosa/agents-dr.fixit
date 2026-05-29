@@ -1,0 +1,28 @@
+# Super Agents — Hermes cloud API (MiMo backend). Deploy:
+#   cd infra/fly/super-agents-api && fly apps create super-agents --org personal
+#   fly secrets set MIMO_API_KEY="sk-..." --app super-agents
+#   fly deploy
+
+app = "super-agents"
+primary_region = "jnb"
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  MIMO_API_BASE = "https://api.xiaomimimo.com/v1"
+  MIMO_MODEL = "mimo-v2.5-pro"
+  SUPER_AGENTS_NAME = "Super Agents"
+  CORS_ALLOW_ORIGINS = "https://superagents-site.vercel.app,https://stud.exchange,https://superagents-site.fly.dev"
