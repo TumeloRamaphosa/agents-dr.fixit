@@ -52,3 +52,33 @@ curl -s https://super-agents.fly.dev/v1/chat/completions \
 Models starting with `Hermes` route to Nous; `mimo-*` routes to MiMo. Force provider: header `X-Studex-Provider: nous` or `mimo`.
 
 **Never commit or paste API keys.** Create keys at https://portal.nousresearch.com only.
+
+## Discord & Slack
+
+1. Create bots (see `docs/SUPER_AGENTS_RUNTIME.md`).
+2. Enable bridges:
+
+```bash
+fly secrets set DISCORD_BOT_TOKEN=... --app super-agents
+fly secrets set SLACK_BOT_TOKEN=... SLACK_APP_TOKEN=... --app super-agents
+fly secrets set ENABLE_DISCORD_BRIDGE=true ENABLE_SLACK_BRIDGE=true --app super-agents
+fly deploy
+```
+
+Mention the Discord bot or `@app` in Slack; replies use `CHAT_MODEL` (default `Hermes-4-70B`) via the hub.
+
+## CashClaw + OpenClaw (Daytona, not inside this image)
+
+```bash
+# In Super Agents sandbox
+bash infra/daytona/bootstrap_super_agents.sh
+```
+
+CashClaw: https://github.com/ertugrulakben/cashclaw
+
+## OpenAI
+
+```bash
+fly secrets set OPENAI_API_KEY=... --app super-agents
+# Use model gpt-4o in requests
+```
