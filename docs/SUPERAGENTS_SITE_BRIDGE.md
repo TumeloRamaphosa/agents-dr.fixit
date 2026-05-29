@@ -8,7 +8,7 @@ The public marketing repo is **[TumeloRamaphosa/superagents-site](https://github
 |--------|------|
 | **Vercel** (`index.html`) | Marketing / landing |
 | **`stud.ex-nexus-dashboard.html`** (copy or symlink into the site repo, or iframe) | Private-style command UX |
-| **Fly.io `studex-command-plane`** | API that holds `DAYTONA_API_KEY` and exposes `/health`, `/api/sandboxes` |
+| **Fly.io `super-agents`** | One VM: `DAYTONA_API_KEY`, `/api/inventory`, MiMo chat — use `https://super-agents.fly.dev` in Control Plane |
 | **Daytona** | Sandboxes (e.g. **Cursor Studex**) for Cursor cloud agents and builds |
 | **`stud.exchange`** | Point DNS to Vercel when ready; add the origin to Fly `CORS_ALLOW_ORIGINS` |
 

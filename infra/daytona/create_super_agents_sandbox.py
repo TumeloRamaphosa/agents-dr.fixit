@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Create Daytona sandbox named 'Super Agents' for cloud agent workloads."""
+"""
+Create the single Daytona sandbox: Super Agents.
+
+This is the only Studex build sandbox. Fly app super-agents is the paired VM/API hub.
+"""
 
 from __future__ import annotations
 
 import argparse
 import os
 import sys
+
+PUBLIC_URL = os.environ.get("SUPER_AGENTS_PUBLIC_URL", "https://super-agents.fly.dev").rstrip("/")
 
 
 def main() -> int:
@@ -26,27 +32,32 @@ def main() -> int:
     labels = {
         "wave": "aesthetics-agent-wave",
         "product": "super-agents",
-        "role": "hermes-cloud",
+        "role": "command-plane-and-build",
+        "fly_app": "super-agents",
     }
     params = CreateSandboxFromSnapshotParams(
         name="Super Agents",
         language="python",
         labels=labels,
         env_vars={
-            "STUDEX_AGENT": "hermes",
-            "OPENAI_API_BASE": os.environ.get(
-                "SUPER_AGENTS_API_BASE", "https://super-agents.fly.dev/v1"
-            ),
+            "STUDEX_WAVE": "aesthetics-agent-wave",
+            "SUPER_AGENTS_HUB": PUBLIC_URL,
+            "OPENAI_API_BASE": f"{PUBLIC_URL}/v1",
+            "STUDEX_COMMAND_API": PUBLIC_URL,
         },
         auto_stop_interval=0,
     )
 
     if args.dry_run:
-        print(f"dry-run: name={params.name!r} labels={labels}")
+        print("dry-run:", params.name, labels)
         return 0
 
     sandbox = Daytona().create(params)
-    print("Created sandbox:", sandbox.id, sandbox.name, sandbox.state)
+    print("Created Super Agents sandbox:")
+    print(f"  id:    {sandbox.id}")
+    print(f"  name:  {sandbox.name}")
+    print(f"  state: {sandbox.state}")
+    print(f"  hub:   {PUBLIC_URL}")
     return 0
 
 

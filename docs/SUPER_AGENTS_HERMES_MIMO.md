@@ -1,34 +1,33 @@
-# Super Agents VM, Hermes, and Xiaomi MiMo
+# Super Agents — one VM, one sandbox
 
-## Security
+## Architecture
 
-Never paste API keys in chat or commit them. Set on Fly only:
-
-```bash
-fly secrets set MIMO_API_KEY="..." --app super-agents
+```
+┌──────────────────────────── Fly: super-agents (jnb) ────────────────────────────┐
+│  /health  /api/inventory  /api/sandboxes  /v1/chat/completions  (MiMo)        │
+└────────────────────────────────────┬────────────────────────────────────────────┘
+                                     │
+┌──────────────────────────── Daytona: "Super Agents" ────────────────────────────┐
+│  Builds, OpenClaw, cursor cloud agents → OPENAI_API_BASE = super-agents.fly.dev │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-If a key was exposed, **revoke and create a new one** at https://platform.xiaomimimo.com/console/api-keys
+No separate **studex-command-plane** Fly app.
 
-## What runs where
+## Secrets (Fly app `super-agents` only)
 
-| Component | Where | Notes |
-|-----------|--------|--------|
-| **Hermes 3 MLX** | Mac Mini (Apple Silicon) | `agents/hermes-3-mlx/` — requires MLX, not portable to Fly Linux |
-| **Super Agents API** | Fly app `super-agents` | OpenAI-compatible proxy to MiMo |
-| **Cursor Studex** | Daytona sandbox | Build / cloud agents |
-| **Super Agents** | Daytona sandbox | `create_super_agents_sandbox.py` |
-| **Marketing site** | Fly `superagents-site` | Static `index.html` |
-| **Management UI** | Command Plane API + dashboard | Lists Daytona + Fly apps |
+```bash
+fly secrets set MIMO_API_KEY=... DAYTONA_API_KEY=... --app super-agents
+```
 
-You **cannot** move the MLX Hermes server to Fly as-is. You **can** run the same *agent software* in Daytona/Fly with LLM calls going to `https://super-agents.fly.dev/v1` (MiMo).
+## Dashboard
+
+Control Plane base URL: **`https://super-agents.fly.dev`**
+
+## Hermes MLX
+
+Stays on Mac (`agents/hermes-3-mlx/`). Cloud agents use Super Agents API + MiMo.
 
 ## Huashu plugin
 
-There is **no Huashu plugin** in this repository (searched the codebase). OpenClaw bootstrap exists at `infra/daytona/bootstrap_openclaw.sh`. If Huashu is a third-party plugin, share the repo or install URL and we can add it to the sandbox bootstrap.
-
-## Dashboard: seeing VMs
-
-1. Deploy `infra/fly/studex-command-plane`
-2. `fly secrets set FLY_API_TOKEN=... DAYTONA_API_KEY=...`
-3. Open Control Plane → Save & Refresh → calls `/api/inventory`
+Not in this repo. OpenClaw: `infra/daytona/bootstrap_openclaw.sh`.

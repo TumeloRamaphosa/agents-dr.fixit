@@ -259,7 +259,7 @@ alert() {
 Sandboxes (**Cursor Studex**), Fly.io API, OpenClaw bootstrap, and the dashboard **Control Plane** tab:
 
 - `infra/daytona/` — create Daytona sandbox (`create_cursor_studex_sandbox.py`), OpenClaw bootstrap script
-- `infra/fly/studex-command-plane/` — FastAPI service for `/health` and `/api/sandboxes`
+- `infra/fly/super-agents/` — Single Fly VM: command plane, `/api/inventory`, MiMo `/v1` (app `super-agents`)
 - `studex-nexus-dashboard.html` — **Control Plane** section (stores Fly URL in `localStorage`)
 - `docs/SUPERAGENTS_SITE_BRIDGE.md` — wiring [superagents-site](https://github.com/TumeloRamaphosa/superagents-site), Vercel, and **stud.exchange**
 
