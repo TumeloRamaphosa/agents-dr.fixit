@@ -16,6 +16,7 @@ cd infra/fly/super-agents
 fly auth login
 fly apps create super-agents --org personal   # if needed
 fly secrets set \
+  NOUS_API_KEY="sk-nous-..." \
   MIMO_API_KEY="..." \
   DAYTONA_API_KEY="..." \
   --app super-agents
@@ -39,3 +40,15 @@ python infra/daytona/create_super_agents_sandbox.py
 curl -s https://super-agents.fly.dev/health
 curl -s https://super-agents.fly.dev/api/inventory
 ```
+
+### Hermes 4 via Nous (same as portal API, key on server)
+
+```bash
+curl -s https://super-agents.fly.dev/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"Hermes-4-70B","messages":[{"role":"user","content":"Hello"}],"max_tokens":64}'
+```
+
+Models starting with `Hermes` route to Nous; `mimo-*` routes to MiMo. Force provider: header `X-Studex-Provider: nous` or `mimo`.
+
+**Never commit or paste API keys.** Create keys at https://portal.nousresearch.com only.

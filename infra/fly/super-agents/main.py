@@ -40,6 +40,24 @@ def _mimo_key() -> str | None:
     return key or None
 
 
+def _nous_key() -> str | None:
+    key = os.environ.get("NOUS_API_KEY", "").strip()
+    return key or None
+
+
+def _pick_provider(model: str | None) -> Literal["nous", "mimo"]:
+    name = (model or "").lower()
+    if name.startswith("hermes") or "nous" in name:
+        return "nous"
+    if name.startswith("mimo"):
+        return "mimo"
+    if DEFAULT_PROVIDER in ("nous", "mimo"):
+        return DEFAULT_PROVIDER  # type: ignore[return-value]
+    if _nous_key():
+        return "nous"
+    return "mimo"
+
+
 def _daytona_client():
     key = os.environ.get("DAYTONA_API_KEY", "").strip()
     if not key:
@@ -148,6 +166,9 @@ def health() -> dict[str, Any]:
         "public_url": PUBLIC_URL,
         "daytona_configured": bool(os.environ.get("DAYTONA_API_KEY", "").strip()),
         "mimo_configured": bool(_mimo_key()),
+        "nous_configured": bool(_nous_key()),
+        "default_provider": DEFAULT_PROVIDER,
+        "nous_model": NOUS_MODEL,
         "fly_inventory_configured": bool(os.environ.get("FLY_API_TOKEN", "").strip()),
         "endpoints": {
             "inventory": "/api/inventory",

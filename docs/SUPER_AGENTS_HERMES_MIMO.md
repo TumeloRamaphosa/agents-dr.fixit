@@ -17,8 +17,10 @@ No separate **studex-command-plane** Fly app.
 ## Secrets (Fly app `super-agents` only)
 
 ```bash
-fly secrets set MIMO_API_KEY=... DAYTONA_API_KEY=... --app super-agents
+fly secrets set NOUS_API_KEY=... MIMO_API_KEY=... DAYTONA_API_KEY=... --app super-agents
 ```
+
+**Hermes-4-70B** uses Nous: `https://inference-api.nousresearch.com/v1/chat/completions` with `Authorization: Bearer` — proxied at `https://super-agents.fly.dev/v1/chat/completions` when `model` is `Hermes-4-70B` (or any `Hermes*` name).
 
 ## Dashboard
 
