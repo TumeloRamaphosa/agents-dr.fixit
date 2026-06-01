@@ -271,6 +271,9 @@ def list_models() -> dict[str, Any]:
         data.append({"id": "Hermes-4-405B", "object": "model", "owned_by": "nous-research"})
     if _mimo_key():
         data.append({"id": MIMO_MODEL, "object": "model", "owned_by": "xiaomi-mimo"})
+    if _openai_key():
+        data.append({"id": OPENAI_MODEL, "object": "model", "owned_by": "openai"})
+        data.append({"id": "gpt-4o", "object": "model", "owned_by": "openai"})
     if not data:
         data.append({"id": NOUS_MODEL, "object": "model", "owned_by": "nous-research"})
     return {"object": "list", "data": data}
@@ -289,9 +292,8 @@ async def chat_completions(request: Request) -> Response:
         payload = None
 
     override = request.headers.get("x-studex-provider", "").strip().lower()
-    provider: Literal["nous", "mimo"]
-    if override in ("nous", "mimo"):
-        provider = override  # type: ignore[assignment]
+    if override in ("nous", "mimo", "openai"):
+        provider = cast(Provider, override)
     else:
         provider = _pick_provider(model if isinstance(model, str) else None)
 
@@ -308,6 +310,19 @@ async def chat_completions(request: Request) -> Response:
         }
         url = f"{NOUS_BASE}/chat/completions"
         timeout = 300.0
+    elif provider == "openai":
+        key = _openai_key()
+        if not key:
+            raise HTTPException(
+                status_code=503,
+                detail="OPENAI_API_KEY not set. fly secrets set OPENAI_API_KEY=... --app super-agents",
+            )
+        headers = {
+            "Authorization": f"Bearer {key}",
+            "Content-Type": content_type,
+        }
+        url = f"{OPENAI_BASE}/chat/completions"
+        timeout = 180.0
     else:
         key = _mimo_key()
         if not key:

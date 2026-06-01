@@ -2,3 +2,5 @@ fastapi>=0.115,<1.0
 uvicorn[standard]>=0.32,<1.0
 httpx>=0.27,<1.0
 daytona>=0.176,<1.0
+discord.py>=2.4,<3.0
+slack-bolt>=1.21,<2.0

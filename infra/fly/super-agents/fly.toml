@@ -15,11 +15,15 @@ primary_region = "jnb"
   processes = ["app"]
 
 [[vm]]
-  memory = "512mb"
+  memory = "1024mb"
   cpu_kind = "shared"
   cpus = 1
 
 [env]
+  ENABLE_DISCORD_BRIDGE = "false"
+  ENABLE_SLACK_BRIDGE = "false"
+  CHAT_MODEL = "Hermes-4-70B"
+  LLM_GATEWAY_URL = "http://127.0.0.1:8080/v1/chat/completions"
   SUPER_AGENTS_NAME = "Super Agents"
   SUPER_AGENTS_SANDBOX_NAME = "Super Agents"
   SUPER_AGENTS_PUBLIC_URL = "https://super-agents.fly.dev"
