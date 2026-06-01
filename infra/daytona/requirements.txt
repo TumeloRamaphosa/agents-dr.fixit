@@ -1,0 +1,2 @@
+# Daytona Python SDK — https://www.daytona.io/docs/en/python-sdk/
+daytona>=0.176,<1.0

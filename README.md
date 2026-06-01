@@ -254,6 +254,15 @@ alert() {
 }
 ```
 
+## Studex Cloud: Daytona · Fly · Command dashboard
+
+Sandboxes (**Cursor Studex**), Fly.io API, OpenClaw bootstrap, and the dashboard **Control Plane** tab:
+
+- `infra/daytona/` — create Daytona sandbox (`create_cursor_studex_sandbox.py`), OpenClaw bootstrap script
+- `infra/fly/super-agents/` — Single Fly VM: command plane, `/api/inventory`, MiMo `/v1` (app `super-agents`)
+- `studex-nexus-dashboard.html` — **Control Plane** section (stores Fly URL in `localStorage`)
+- `docs/SUPERAGENTS_SITE_BRIDGE.md` — wiring [superagents-site](https://github.com/TumeloRamaphosa/superagents-site), Vercel, and **stud.exchange**
+
 ## Legacy: Agent Configuration
 
 This repo was previously used for agent configuration management. Those configs are preserved in:

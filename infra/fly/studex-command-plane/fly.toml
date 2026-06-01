@@ -1,0 +1,24 @@
+# fly.toml — deploy with: cd infra/fly/studex-command-plane && fly apps create studex-command-plane && fly deploy
+# Adjust app name org-wide if taken.
+
+app = "studex-command-plane"
+primary_region = "iad"
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  # Comma-separated origins for browser dashboard (Vercel + custom domain)
+  CORS_ALLOW_ORIGINS = "https://superagents-site.vercel.app,https://stud.exchange,http://localhost:3000"

@@ -1,0 +1,32 @@
+export const C = {
+  bg: "#0A0806",
+  bg2: "#100C08",
+  bg3: "#180F0A",
+  gesso: "#FDFAF5",
+  gesso2: "#F5F1E8",
+  vg: "#C9A962",
+  vgl: "#E8D48A",
+  vgd: "#8A6420",
+  arc: "#00D4FF",
+  arcDim: "rgba(0,212,255,.12)",
+  ok: "#3DC87A",
+  warn: "#E8A030",
+  err: "#D44A4A",
+  ink: "#0D0D0B",
+  ink3: "#5C5448",
+  ink4: "#8C8478",
+  rule: "rgba(201,169,98,.1)",
+}
+
+export const CAT_COLORS = {
+  strategy: "#C9A962",
+  revenue: "#3DC87A",
+  tech: "#00D4FF",
+  team: "#E8A030",
+  payment: "#9B59B6",
+  infra: "#624C18",
+  product: "#7A3820",
+  partners: "#1E5038",
+  personal: "#5E1828",
+  agents: "#0C4E58",
+}

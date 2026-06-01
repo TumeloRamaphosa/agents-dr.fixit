@@ -1,0 +1,21 @@
+name: Super Agents API tests
+
+on:
+  push:
+    paths:
+      - "infra/fly/super-agents/**"
+      - ".github/workflows/super-agents-api.yml"
+  pull_request:
+    paths:
+      - "infra/fly/super-agents/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r infra/fly/super-agents/requirements.txt
+      - run: python -m unittest discover -s infra/fly/super-agents/tests -v

@@ -680,6 +680,7 @@
             <li><a href="#nas" onclick="showPage('nas')">NAS Drive</a></li>
             <li><a href="#ollama" onclick="showPage('ollama')">Ollama Models</a></li>
             <li><a href="#mesh" onclick="showPage('mesh')">LLM Mesh</a></li>
+            <li><a href="#control-plane" onclick="showPage('control-plane')">Control Plane</a></li>
             <li><a href="#integrations" onclick="showPage('integrations')">Integrations</a></li>
             <li><a href="#composio" onclick="showPage('composio')">Composio Hub</a></li>
             <li><a href="#agents" onclick="showPage('agents')">Agents</a></li>
@@ -1492,6 +1493,95 @@
         </div>
     </section>
 
+    <!-- Control Plane: Daytona · Fly · OpenClaw (Aesthetics Agent Wave) -->
+    <section id="control-plane" class="page">
+        <h2 class="section-title">Control Plane</h2>
+        <p class="section-subtitle">Daytona sandboxes, Fly.io command API, and external agent surfaces</p>
+
+        <div class="integrations-grid">
+            <div class="integration-card" style="grid-column: span 3; border: 2px solid var(--gold);">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: var(--gold);">Super Agents VM (Fly.io)</span>
+                    <span class="integration-status connected">One hub</span>
+                </div>
+                <div class="integration-details" style="display: block;">
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6;">
+                        Deploy <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">infra/fly/super-agents</code> (single VM). Paste <strong>https://super-agents.fly.dev</strong> here (no trailing slash). Calls <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">/api/inventory</code> + MiMo <code style="background:#1F1F1F;padding:2px 8px;border-radius:4px;">/v1</code>.
+                    </p>
+                    <label style="display:block;color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.35rem;">Command API base URL</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+                        <input id="command-api-base" type="url" placeholder="https://super-agents.fly.dev" style="flex:1;min-width:220px;padding:0.65rem 1rem;border-radius:8px;border:1px solid rgba(201,168,76,0.35);background:var(--obsidian-lighter);color:var(--text-primary);font-family:inherit;font-size:1rem;">
+                        <button type="button" onclick="saveCommandApiBase(); refreshCommandPlane();" style="padding:0.65rem 1.25rem;border-radius:8px;border:none;background:var(--gold);color:#0A0A0A;font-weight:700;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">Save &amp; Refresh</button>
+                    </div>
+                    <p id="cp-api-status" style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;"></p>
+                    <div id="cp-sandbox-list" style="margin-top:1rem;"></div>
+                    <div id="cp-fly-list" style="margin-top:1rem;"></div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: var(--gold);">Super Agents</span>
+                    <span class="integration-status connected">Hermes cloud</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Fly + API</span><span>super-agents (command plane + MiMo)</span></div>
+                    <div class="integration-detail"><span>Path</span><span><code style="font-size:0.75rem;">infra/fly/super-agents</code></span></div>
+                    <div class="integration-detail"><span>Daytona</span><span>One sandbox: Super Agents</span></div>
+                    <div class="integration-detail"><span>Create</span><span><code style="font-size:0.75rem;">create_super_agents_sandbox.py</code></span></div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Daytona</span>
+                    <span class="integration-status connected">Build VMs</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Sandbox</span><span>Super Agents (only)</span></div>
+                    <div class="integration-detail"><span>Wave label</span><span>aesthetics-agent-wave</span></div>
+                    <div class="integration-detail"><span>Create</span><span><code style="font-size:0.75rem;">create_super_agents_sandbox.py</code></span></div>
+                    <div class="integration-detail"><span>Docs</span><span><a href="https://www.daytona.io/docs/en/python-sdk/" target="_blank" rel="noopener" style="color:var(--gold);">Python SDK →</a></span></div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">Fly.io</span>
+                    <span class="integration-status connected">Client-facing</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Hub URL</span><span><a href="https://super-agents.fly.dev" target="_blank" rel="noopener" style="color:var(--gold);">super-agents.fly.dev →</a></span></div>
+                    <div class="integration-detail"><span>Site</span><span>superagents-site (static)</span></div>
+                </div>
+            </div>
+
+            <div class="integration-card">
+                <div class="integration-header">
+                    <span class="integration-name">OpenClaw</span>
+                    <span class="integration-status connected">In-sandbox</span>
+                </div>
+                <div class="integration-details">
+                    <div class="integration-detail"><span>Bootstrap</span><span><code style="font-size:0.75rem;">infra/daytona/bootstrap_openclaw.sh</code></span></div>
+                    <div class="integration-detail"><span>Global</span><span><code style="font-size:0.75rem;">npm i -g openclaw</code></span></div>
+                </div>
+            </div>
+
+            <div class="integration-card" style="grid-column: span 3;">
+                <div class="integration-header">
+                    <span class="integration-name" style="color: var(--gold);">External dashboards</span>
+                    <span class="integration-status connected">Links</span>
+                </div>
+                <div class="integration-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="integration-detail"><span>Conway</span><span><a href="https://conway.tech/" target="_blank" rel="noopener" style="color:var(--gold);">conway.tech →</a></span></div>
+                    <div class="integration-detail"><span>AgentMail</span><span><a href="https://www.agentmail.to/" target="_blank" rel="noopener" style="color:var(--gold);">agentmail.to →</a></span></div>
+                    <div class="integration-detail"><span>Vercel site</span><span><a href="https://superagents-site.vercel.app" target="_blank" rel="noopener" style="color:var(--gold);">superagents-site →</a></span></div>
+                    <div class="integration-detail"><span>Custom domain</span><span>stud.exchange (DNS)</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer>
         <div class="footer-logo">Studex Nexus</div>
@@ -1619,11 +1709,86 @@
             
             // Scroll to top
             window.scrollTo(0, 0);
+
+            if (pageId === 'control-plane') {
+                setTimeout(refreshCommandPlane, 0);
+            }
+        }
+
+        const STUDEX_COMMAND_API_LS = 'studexCommandApiBase';
+
+        function loadCommandApiBase() {
+            return localStorage.getItem(STUDEX_COMMAND_API_LS) || '';
+        }
+
+        function saveCommandApiBase() {
+            const input = document.getElementById('command-api-base');
+            if (input && input.value.trim()) {
+                localStorage.setItem(STUDEX_COMMAND_API_LS, input.value.trim().replace(/\/$/, ''));
+            }
+        }
+
+        function renderInventoryList(title, itemsHtml) {
+            return '<p style="color:var(--gold);font-family:\'Bebas Neue\',sans-serif;letter-spacing:1px;margin:0.75rem 0 0.35rem;">' + title + '</p><ul style="list-style:none;padding:0;">' + itemsHtml + '</ul>';
+        }
+
+        async function refreshCommandPlane() {
+            const statusEl = document.getElementById('cp-api-status');
+            const listEl = document.getElementById('cp-sandbox-list');
+            const flyEl = document.getElementById('cp-fly-list');
+            if (!statusEl || !listEl) return;
+
+            const base = loadCommandApiBase();
+            if (!base) {
+                statusEl.textContent = 'Set your Fly.io Studex Command Plane URL, then Save & Refresh.';
+                listEl.innerHTML = '';
+                if (flyEl) flyEl.innerHTML = '';
+                return;
+            }
+            statusEl.textContent = 'Loading…';
+            listEl.innerHTML = '';
+            if (flyEl) flyEl.innerHTML = '';
+            try {
+                const h = await fetch(base + '/health');
+                const hj = await h.json();
+                statusEl.textContent = 'Health: ' + JSON.stringify(hj);
+
+                const inv = await fetch(base + '/api/inventory');
+                const data = await inv.json();
+                const daytona = data.daytona || {};
+                const fly = data.fly || {};
+
+                if (!daytona.configured) {
+                    listEl.innerHTML = '<p style="color:var(--text-secondary)">' + (daytona.message || 'Daytona not configured.') + '</p>';
+                } else if (!daytona.sandboxes || !daytona.sandboxes.length) {
+                    listEl.innerHTML = '<p style="color:var(--text-secondary)">No Daytona sandboxes.</p>';
+                } else {
+                    listEl.innerHTML = renderInventoryList('Daytona sandboxes', daytona.sandboxes.map(function (b) {
+                        return '<li style="margin:0.5rem 0;padding:0.75rem;background:var(--obsidian-lighter);border-radius:8px;border:1px solid rgba(201,168,76,0.15);"><strong style="color:var(--gold);">' + (b.name || b.id) + '</strong> <span style="color:var(--text-secondary)">' + (b.state || '') + '</span><br><small style="color:var(--gold-dim);word-break:break-all;">' + b.id + '</small></li>';
+                    }).join(''));
+                }
+
+                if (flyEl) {
+                    if (!fly.configured) {
+                        flyEl.innerHTML = '<p style="color:var(--text-secondary)">' + (fly.message || 'Fly inventory not configured (set FLY_API_TOKEN on command plane).') + '</p>';
+                    } else if (!fly.apps || !fly.apps.length) {
+                        flyEl.innerHTML = '<p style="color:var(--text-secondary)">No Fly apps listed.</p>';
+                    } else {
+                        flyEl.innerHTML = renderInventoryList('Fly.io apps / VMs', fly.apps.map(function (a) {
+                            return '<li style="margin:0.5rem 0;padding:0.75rem;background:var(--obsidian-lighter);border-radius:8px;border:1px solid rgba(201,168,76,0.15);"><strong style="color:var(--gold);">' + a.name + '</strong> <span style="color:var(--text-secondary)">' + (a.status || '') + '</span><br><small><a href="' + (a.hostname || '#') + '" target="_blank" rel="noopener" style="color:var(--gold);">' + (a.hostname || '') + '</a></small></li>';
+                        }).join(''));
+                    }
+                }
+            } catch (e) {
+                statusEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e));
+            }
         }
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initParticleSystem();
+            var input = document.getElementById('command-api-base');
+            if (input) input.value = loadCommandApiBase();
         });
     </script>
     

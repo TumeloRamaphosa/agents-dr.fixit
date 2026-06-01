@@ -1,0 +1,233 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pip {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(52px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(52px) rotate(-360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes hexSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    top: -4px;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes logScroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.studex-command *,
+.studex-command *::before,
+.studex-command *::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.studex-command {
+  --studex-rule: rgba(201, 169, 98, 0.1);
+  position: relative;
+  font-size: 16px;
+  font-family: "Cormorant Garamond", serif;
+  background: #0a0806;
+  color: #fdfaf5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  height: 100%;
+}
+
+.studex-command ::-webkit-scrollbar {
+  width: 2px;
+}
+
+.studex-command ::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 98, 0.25);
+}
+
+.studex-command .cinzel {
+  font-family: "Cinzel", serif;
+}
+
+.studex-command .mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.studex-command-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+}
+
+.studex-command-nav-shell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.studex-command-nav-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .studex-command-nav-scroll {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .studex-command-nav-scroll button {
+    flex-shrink: 0;
+  }
+}
+
+.studex-command-infra-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+.studex-command-cognitive-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 200px 1fr 280px;
+  overflow: hidden;
+}
+
+.studex-command-souldoc-tri-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+  background: rgba(201, 169, 98, 0.1);
+  margin-bottom: 32px;
+}
+
+.studex-command-souldoc-q-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .studex-command-infra-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .studex-command-infra-grid > .studex-command-infra-left {
+    border-right: none !important;
+    border-bottom: 1px solid var(--studex-rule);
+  }
+
+  .studex-command-cognitive-sidebar {
+    border-right: none !important;
+    border-bottom: 1px solid var(--studex-rule);
+  }
+
+  .studex-command-cognitive-middle {
+    border-right: none !important;
+    border-bottom: 1px solid var(--studex-rule);
+  }
+
+  .studex-command-cognitive-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(0, auto);
+    overflow-y: auto;
+  }
+
+  .studex-command-souldoc-tri-grid,
+  .studex-command-souldoc-q-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studex-command-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.studex-command-header-right {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .studex-command-header-right {
+    margin-left: 0;
+  }
+}
